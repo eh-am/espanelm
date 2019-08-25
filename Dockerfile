@@ -10,6 +10,4 @@ WORKDIR /app
 COPY --from=builder /app/dist /app
 COPY --from=builder /app/node_modules /app/node_modules
 
-ADD entrypoint.sh /app/entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["node", "/app/index.js"]
