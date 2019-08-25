@@ -1,5 +1,5 @@
-let Parser = require("rss-parser");
-let parser = new Parser();
+import Parser from "rss-parser";
+const parser = new Parser();
 import { from, Observable, of } from "rxjs";
 import { filter, flatMap } from "rxjs/operators";
 

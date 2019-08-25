@@ -1,7 +1,9 @@
 import axios from "axios";
 import { JSDOM } from "jsdom";
-import { map, filter, tap } from "rxjs/operators";
-import { of, Observable, from } from "rxjs";
+import { map, filter } from "rxjs/operators";
+import { Observable, from } from "rxjs";
+
+// eslint-disable-next-line
 const UserAgent = require("user-agents");
 
 export default function scrapePage(url: string) {
@@ -19,7 +21,7 @@ export default function scrapePage(url: string) {
 
       const getDatePublished = () => {
         const a = dom.window.document.querySelector(
-          '[itemprop="datePublished"]'
+          "[itemprop=\"datePublished\"]"
         );
         if (!a) {
           return "";
@@ -33,7 +35,7 @@ export default function scrapePage(url: string) {
       };
 
       const getLang = () => {
-        const meta = dom.window.document.querySelector('meta[name="lang"]');
+        const meta = dom.window.document.querySelector("meta[name=\"lang\"]");
         if (meta && meta.getAttribute("content")) {
           return meta.getAttribute("content");
         }
@@ -49,7 +51,7 @@ export default function scrapePage(url: string) {
           dom.window.document.querySelector("[itemprop=headline]")
         ),
         body: Array.from(
-          dom.window.document.querySelectorAll('[itemprop="articleBody"] p')
+          dom.window.document.querySelectorAll("[itemprop=\"articleBody\"] p")
         )
           .filter(hasTextContent)
           .map(a => a.textContent)
@@ -64,7 +66,7 @@ export default function scrapePage(url: string) {
  */
 function extractLinks(dom: JSDOM) {
   return filterLinks(
-    Array.from(dom.window.document.querySelectorAll('link[rel="alternate"]'))
+    Array.from(dom.window.document.querySelectorAll("link[rel=\"alternate\"]"))
   );
 }
 

@@ -10,7 +10,7 @@
     "watch-ts": "tsc -w",
     "build-ts": "tsc",
     "watch-node": "nodemon dist/index.js",
-    "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
+    "lint": "tsc --noEmit && eslint \"src/**/*.{js,ts}\" --quiet --fix",
     "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/jsdom": "^12.2.4",
+    "@types/xml2js": "^0.4.4",
     "@typescript-eslint/eslint-plugin": "^2.0.0",
     "@typescript-eslint/parser": "^2.0.0",
     "concurrently": "^4.1.2",
