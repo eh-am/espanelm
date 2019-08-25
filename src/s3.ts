@@ -21,7 +21,8 @@ export function uploadToS3(data: any) {
     {
       Bucket: "espanelm",
       Key: "news.json",
-      Body: JSON.stringify(data)
+      Body: JSON.stringify(data),
+      ACL: "public-read"
     },
     function() {
       console.log("Successfully uploaded package.");
