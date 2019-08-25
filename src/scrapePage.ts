@@ -7,9 +7,6 @@ const UserAgent = require("user-agents");
 export default function scrapePage(url: string) {
   return load(url).pipe(
     map(r => new JSDOM(r)),
-    // tap(dom => {
-    //   console.log("extract links", extractLinks(dom));
-    // }),
     filter(dom => extractLinks(dom).length > 0),
     map(dom => {
       const textContentOrEmpty = (e: Element | null) => {

@@ -18,11 +18,13 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.517.0",
     "axios": "^0.19.0",
     "cheerio": "^1.0.0-rc.3",
     "jsdom": "^15.1.1",
     "rss-parser": "^3.7.2",
     "rxjs": "^6.5.2",
+    "s3": "^4.4.0",
     "user-agents": "^1.0.358"
   },
   "devDependencies": {

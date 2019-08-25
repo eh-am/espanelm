@@ -1,7 +1,15 @@
 import scrapePage from "./scrapePage";
 import scrapeRSS from "./scrapeRSS";
-import { map, mergeMap, delay } from "rxjs/operators";
+import { map, mergeMap, delay, tap, filter } from "rxjs/operators";
 import { of } from "rxjs";
+const AWS = require("aws-sdk");
+
+const s3 = new AWS.S3({
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY_ID
+  }
+});
 
 let data: any = [];
 
@@ -25,6 +33,7 @@ scrapeRSS("https://brasil.elpais.com/rss/brasil/portada_completo.xml")
       return of({});
     })
   )
+
   .subscribe(
     r => {
       data.push(r);
@@ -33,6 +42,19 @@ scrapeRSS("https://brasil.elpais.com/rss/brasil/portada_completo.xml")
     () => {
       // when the observable finishes
       // output everything at once
-      console.log(JSON.stringify(data));
+      uploadToS3(data);
     }
   );
+
+function uploadToS3(data: any) {
+  s3.putObject(
+    {
+      Bucket: "espanelm",
+      Key: "news.json",
+      Body: JSON.stringify(data)
+    },
+    function() {
+      console.log("Successfully uploaded package.");
+    }
+  );
+}
