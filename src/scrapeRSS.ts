@@ -1,30 +1,22 @@
-import Parser from "rss-parser";
-const parser = new Parser();
-import { from, Observable, of } from "rxjs";
-import { filter, flatMap } from "rxjs/operators";
+import RSSParser from 'rss-parser';
+const rssParser = new RSSParser();
+import { from, Observable, of, EMPTY } from 'rxjs';
+import { switchMap, pluck, mergeMap } from 'rxjs/operators';
+import { load } from './utils';
 
-interface RSSResponse {
-  title: string;
-  link: string;
-  pubDate: string; // TODO: use date
-  enclosure: {
-    url: string;
-    length: string;
-    type: "image/jpeg"; // TODO: mime type
-  };
-  content: string;
-  guid: string;
-  isoDate: string;
-}
+// make 'link' field required
+export type RSSResponse = RSSParser.Item &
+  Required<Pick<RSSParser.Item, 'link'>>;
 
 export default function scrapeRSS(url: string): Observable<RSSResponse> {
-  return from(
-    (parser.parseURL(url) as Promise<RSSResponse[]>).then(
-      (feed: any) => feed.items
-    )
-  ).pipe(
-    // break the array into single item at a time
-    flatMap((a: RSSResponse[]) => a),
-    filter(a => !!a.link)
+  return load<string>(url).pipe(
+    switchMap(a => rssParser.parseString(a)),
+    pluck('items'),
+    switchMap(a => (a ? from(a) : EMPTY)), // sends one item at a time
+    mergeMap(a => (isRSSResponseWithLink(a) ? of(a) : EMPTY)) // filter only those with .link field
   );
+}
+
+function isRSSResponseWithLink(item: RSSParser.Item): item is RSSResponse {
+  return !!item.link;
 }
