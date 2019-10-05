@@ -6,7 +6,6 @@ import { load } from './utils';
 export function scrapePage(
   url: string
 ): Observable<{
-  datePublished: number;
   lang: string;
   links: { ptbr: string; es: string };
   title: string;
@@ -17,7 +16,6 @@ export function scrapePage(
     map(dom => {
       return {
         // rely on https://schema.org/ definitions
-        datePublished: extractDate(dom),
         lang: extractLang(dom),
         links: extractLinks(dom),
         title: extractTitle(dom),
@@ -43,6 +41,9 @@ function extractLang(dom: JSDOM): string {
 }
 
 function extractTitle(dom: JSDOM): string {
+  // in fact there may be more than one in the DOM
+  // so querySelector is just a very aggressive heuristic
+  // (ie TODO query should be more specific)
   const title = dom.window.document.querySelector('[itemprop=headline]');
   const textContent = title && title.textContent;
 
@@ -55,18 +56,6 @@ function extractBody(dom: JSDOM): string[] {
   );
 
   return body.map(a => a.textContent || '');
-}
-
-function extractDate(dom: JSDOM): number {
-  const a = dom.window.document.querySelector('[itemprop="datePublished"]');
-  const date = a && a.getAttribute('content');
-
-  if (date) {
-    // TODO: verify this conversion
-    // the idea is using posix time
-    return new Date(date).getTime() / 1000;
-  }
-  return 0;
 }
 
 function extractLinks(dom: JSDOM): { ptbr: string; es: string } {

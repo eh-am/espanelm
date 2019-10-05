@@ -11,19 +11,30 @@ export function run(url: string): Observable<any> {
   return scrapeRSS(url).pipe(
     mergeMap(a =>
       scrapePage(a.link).pipe(
+        mergeMap(a => (a.links.es ? of(a) : EMPTY)),
+        mergeMap(ptbr => {
+          // scrape es
+          return scrapePage(ptbr.links.es).pipe(
+            map(es => {
+              return {
+                ptbr,
+                es
+              };
+            })
+          );
+        }),
         map(b => {
           return {
             ...b,
-            image: a.enclosure && a.enclosure.url ? a.enclosure.url : null,
-            contentSnippet: a.contentSnippet
+            publishedAt: a.isoDate
+              ? new Date(a.isoDate).getTime() / 1000
+              : null,
+
+            image: a.enclosure && a.enclosure.url ? a.enclosure.url : null
           };
         })
       )
     ),
-    mergeMap(a => (a.links.es ? of(a) : EMPTY)),
-    mergeMap(a => {
-      return scrapePage(a.links.es).pipe(map(r => mountObject(a, r)));
-    }),
 
     // filter out articles with 0 paragraphs (wtf?)
     mergeMap(a => (a.es.body.length && a.ptbr.body.length ? of(a) : EMPTY)),
