@@ -1,6 +1,6 @@
 import scrapePage from './scrapePage';
 import scrapeRSS from './scrapeRSS';
-import { map, mergeMap, reduce } from 'rxjs/operators';
+import { map, mergeMap, reduce, tap } from 'rxjs/operators';
 import { Observable, of, EMPTY } from 'rxjs';
 
 // we need to infer the type later
@@ -9,11 +9,25 @@ type Article = Unpack<ReturnType<typeof scrapePage>>;
 
 export function run(url: string): Observable<any> {
   return scrapeRSS(url).pipe(
-    mergeMap(a => scrapePage(a.link)),
+    mergeMap(a =>
+      scrapePage(a.link).pipe(
+        map(b => {
+          return {
+            ...b,
+            image: a.enclosure && a.enclosure.url ? a.enclosure.url : null,
+            contentSnippet: a.contentSnippet
+          };
+        })
+      )
+    ),
     mergeMap(a => (a.links.es ? of(a) : EMPTY)),
     mergeMap(a => {
       return scrapePage(a.links.es).pipe(map(r => mountObject(a, r)));
     }),
+
+    // filter out articles with 0 paragraphs (wtf?)
+    mergeMap(a => (a.es.body.length && a.ptbr.body.length ? of(a) : EMPTY)),
+
     // we are only interested in the last values
     reduce((prev, curr) => [...prev, curr], [] as ReturnType<
       typeof mountObject
