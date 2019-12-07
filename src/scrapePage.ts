@@ -48,7 +48,20 @@ function extractTitle(dom: JSDOM): string {
   const title = dom.window.document.querySelector('[itemprop=headline]');
   const textContent = title && title.textContent;
 
-  return textContent || '';
+  if (textContent) {
+    return textContent;
+  }
+
+  // try method 2
+  const method2 = dom.window.document.querySelector(
+    'meta[property="og:title"]'
+  ) as any;
+
+  if (method2 && method2.content) {
+    return method2.content;
+  }
+
+  return '';
 }
 
 function extractBody(dom: JSDOM): string[] {
