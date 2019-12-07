@@ -1,7 +1,7 @@
 #!/bin/env bash
 
 echo "Fetching latest articles..."
-node /app/index.js "https://elpais.com/rss/elpais/portada.xml"
+node /app/index.js "https://elpais.com/rss/elpais/portada.xml" > news.json
 
 
 echo "Validating JSON..."
