@@ -1,27 +1,18 @@
 import scrapePage from './scrapePage';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
-import * as path from 'path';
-import * as fs from 'fs';
+import { loadFixture } from '../test/helpers';
 const axiosMock = new MockAdapter(axios);
 
-const fixture = fs.readFileSync(
-  path.join(__dirname, '../fixtures/article.html'),
-  'utf8',
-);
+it('should work', async done => {
+  const fixture = await loadFixture('article.html');
+  const expected = JSON.parse((await loadFixture('article.json')) as string);
 
-const expected = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../fixtures/article.json'), 'utf8'),
-);
+  axiosMock.onGet('/').reply(200, fixture);
 
-describe('tesrt', () => {
-  it('should work', done => {
-    axiosMock.onGet('/').reply(200, fixture);
+  scrapePage('/').subscribe(a => {
+    expect(a).toMatchObject(expected);
 
-    scrapePage('/').subscribe(a => {
-      expect(a).toMatchObject(expected);
-
-      done();
-    });
+    done();
   });
 });

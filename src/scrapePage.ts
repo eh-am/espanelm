@@ -28,6 +28,7 @@ export function scrapePage(
       if (!a.links.es || !a.links.ptbr) {
         return EMPTY;
       }
+
       return of(a);
     })
   );
@@ -51,11 +52,23 @@ function extractTitle(dom: JSDOM): string {
 }
 
 function extractBody(dom: JSDOM): string[] {
-  const body = Array.from(
+  const extractContent = (a: Element[]): string[] =>
+    a.map(b => b.textContent || '');
+
+  const method1 = Array.from(
     dom.window.document.querySelectorAll('[itemprop="articleBody"] p')
   );
+  if (method1.length > 0) {
+    return extractContent(method1);
+  }
 
-  return body.map(a => a.textContent || '');
+  const method2 = Array.from(
+    dom.window.document.querySelectorAll('.article_body p')
+  );
+
+  if (method2) return extractContent(method2);
+
+  return [];
 }
 
 function extractLinks(dom: JSDOM): { ptbr: string; es: string } {
@@ -64,8 +77,8 @@ function extractLinks(dom: JSDOM): { ptbr: string; es: string } {
   );
 
   return {
-    ptbr: filterLinks(links, 'pt-br'),
-    es: filterLinks(links, 'es')
+    ptbr: filterLinks(links, 'pt-br') || filterLinks(links, 'pt-BR'),
+    es: filterLinks(links, 'es') || filterLinks(links, 'es-ES')
   };
 }
 

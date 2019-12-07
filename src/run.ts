@@ -1,25 +1,55 @@
 import scrapePage from './scrapePage';
 import scrapeRSS from './scrapeRSS';
-import { map, mergeMap, reduce, tap } from 'rxjs/operators';
+import { map, mergeMap, reduce } from 'rxjs/operators';
 import { Observable, of, EMPTY } from 'rxjs';
 
 // we need to infer the type later
 type Unpack<T> = T extends Observable<infer U> ? U : never;
 type Article = Unpack<ReturnType<typeof scrapePage>>;
 
+// not that pretty
+// since rss returns us 'pt-br'
+// but the scrapePage uses 'ptbr'
+function opposite(a: 'es' | 'ptbr'): 'es' | 'ptbr' {
+  switch (a) {
+    case 'es':
+      return 'ptbr';
+    case 'ptbr':
+      return 'es';
+  }
+}
+
 export function run(url: string): Observable<any> {
   return scrapeRSS(url).pipe(
     mergeMap(a =>
       scrapePage(a.link).pipe(
-        mergeMap(a => (a.links.es ? of(a) : EMPTY)),
-        mergeMap(ptbr => {
+        mergeMap(b => {
+          const o = opposite(a.language);
+          if (b.links[o]) {
+            return of(b);
+          }
+          return EMPTY;
+        }),
+        mergeMap(page => {
+          const key = opposite(a.language);
           // scrape es
-          return scrapePage(ptbr.links.es).pipe(
-            map(es => {
-              return {
-                ptbr,
-                es
-              };
+          return scrapePage(page.links[key]).pipe(
+            map(newPage => {
+              switch (a.language) {
+                case 'es': {
+                  return {
+                    es: page,
+                    ptbr: newPage
+                  };
+                }
+
+                case 'ptbr': {
+                  return {
+                    ptbr: page,
+                    es: newPage
+                  };
+                }
+              }
             })
           );
         }),
@@ -37,12 +67,19 @@ export function run(url: string): Observable<any> {
     ),
 
     // filter out articles with 0 paragraphs (wtf?)
-    mergeMap(a => (a.es.body.length && a.ptbr.body.length ? of(a) : EMPTY)),
+    mergeMap(a => {
+      if (a.es.body.length && a.ptbr.body.length) {
+        return of(a);
+      }
+      console.log('Article has 0 paragraphs. Skipping...', a);
+      return EMPTY;
+    }),
 
     // we are only interested in the last values
-    reduce((prev, curr) => [...prev, curr], [] as ReturnType<
-      typeof mountObject
-    >[])
+    reduce(
+      (prev, curr) => [...prev, curr],
+      [] as ReturnType<typeof mountObject>[]
+    )
   );
 }
 
