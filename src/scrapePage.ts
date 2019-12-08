@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, catchError, tap } from 'rxjs/operators';
 import { Observable, EMPTY, of } from 'rxjs';
 import { load } from './utils';
 
@@ -11,6 +11,7 @@ export function scrapePage(
   title: string;
   body: string[];
 }> {
+  console.error('Scrapping page', url);
   return load<string>(url).pipe(
     map(r => new JSDOM(r)),
     map(dom => {
@@ -30,6 +31,10 @@ export function scrapePage(
       }
 
       return of(a);
+    }),
+    catchError(() => {
+      console.error('Error parsing url', url);
+      return EMPTY;
     })
   );
 }
