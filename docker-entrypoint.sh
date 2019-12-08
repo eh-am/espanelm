@@ -2,6 +2,8 @@
 
 echo "Fetching latest articles..."
 node /app/index.js "https://elpais.com/rss/elpais/portada.xml" > news.json
+echo "Displaying news.json"
+cat news.json
 
 
 echo "Validating JSON..."
