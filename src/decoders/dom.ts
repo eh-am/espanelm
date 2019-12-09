@@ -3,6 +3,7 @@ import { Result } from 'true-myth';
 
 export interface DOM {
   querySelector(q: string): null | Element;
+  querySelectorAll(q: string): NodeListOf<Element>;
 }
 
 export function DOMFromText(s: string): Result<DOM, { reason: string }> {
@@ -18,11 +19,16 @@ export function DOMFromText(s: string): Result<DOM, { reason: string }> {
 // therefore we need this wrapper
 class JSDOMImpl implements DOM {
   _dom: JSDOM;
+
   constructor(html: string) {
     this._dom = new JSDOM(html);
   }
 
   querySelector(q: string): Element | null {
     return this._dom.window.document.querySelector(q);
+  }
+
+  querySelectorAll(q: string): NodeListOf<Element> {
+    return this._dom.window.document.querySelectorAll(q);
   }
 }
