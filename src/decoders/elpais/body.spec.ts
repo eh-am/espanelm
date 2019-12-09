@@ -3,7 +3,7 @@ import { DOM, DOMFromText } from '../dom';
 import { decodeBody } from './body';
 import { Result } from 'true-myth';
 
-fdescribe('ElPais Body Decoder', () => {
+describe('ElPais Body Decoder', () => {
   const domFromFixture = async (f: string): Promise<DOM> => {
     const fixture = await loadFixtureOrFail(f);
 

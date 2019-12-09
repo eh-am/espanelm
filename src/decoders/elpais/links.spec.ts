@@ -3,7 +3,7 @@ import { DOM, DOMFromText } from '../dom';
 import { PageLinks, decodeLinks } from './links';
 import { Result } from 'true-myth';
 
-fdescribe('ElPais Links Decoder', () => {
+describe('ElPais Links Decoder', () => {
   const domFromFixture = async (f: string): Promise<DOM> => {
     const fixture = await loadFixtureOrFail(f);
 
