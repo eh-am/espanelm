@@ -56,7 +56,6 @@ it('should work for ptbr rss', async done => {
   axiosMock.onGet('/').reply(200, fixture);
   run('/').subscribe(
     a => {
-      console.log(a);
       expect(a.length).toBe(2);
     },
     null,

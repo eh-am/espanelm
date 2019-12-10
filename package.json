@@ -24,6 +24,7 @@
     "jsdom": "^15.1.1",
     "rss-parser": "^3.7.2",
     "rxjs": "^6.5.2",
+    "true-myth": "^3.1.0",
     "user-agents": "^1.0.358"
   },
   "devDependencies": {
