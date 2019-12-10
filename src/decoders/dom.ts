@@ -17,7 +17,7 @@ export function DOMFromText(s: string): Result<DOM, { reason: string }> {
 // JSDOM does some runtime to guarantee
 // it's running inside a class
 // therefore we need this wrapper
-class JSDOMImpl implements DOM {
+export class JSDOMImpl implements DOM {
   _dom: JSDOM;
 
   constructor(html: string) {
