@@ -4,7 +4,7 @@ echo "Fetching latest articles..."
 
 # For historical reasons
 date=$(date '+%Y-%m-%d_%H-%M-%S_%s')
-curl https://feeds.elpais.com/mrss-s/pages/ep/site/brasil.elpais.com/portada > "portada-$date".xml
+curl https://feeds.elpais.com/mrss-s/pages/ep/site/brasil.elpais.com/portada > "rss_$date".xml
 aws s3 cp news.json "s3://espanelm-website/rss_$date".xml
 
 
