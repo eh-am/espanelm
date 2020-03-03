@@ -5,7 +5,7 @@ RUN npm install && npm test && npm run build
 
 
 FROM node:alpine
-RUN apk add --update python py-pip jq
+RUN apk add --update python py-pip jq curl
 RUN pip install awscli
 
 WORKDIR /app
