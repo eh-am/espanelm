@@ -2,7 +2,7 @@ import scrapePage from './scrapePage';
 import scrapeRSS from './scrapeRSS';
 import { map, mergeMap, reduce } from 'rxjs/operators';
 import { Observable, of, EMPTY } from 'rxjs';
-import { Languages } from './languages';
+import { Languages } from '../../languages';
 
 // we need to infer the type later
 type Unpack<T> = T extends Observable<infer U> ? U : never;

@@ -9,7 +9,7 @@
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
     "watch-ts": "tsc -w",
     "build-ts": "tsc",
-    "watch-node": "nodemon dist/index.js https://feeds.elpais.com/mrss-s/pages/ep/site/brasil.elpais.com/portada",
+    "watch-node": "nodemon dist/index.js elpais",
     "lint": "tsc --noEmit && eslint \"src/**/*.{js,ts}\" --quiet --fix",
     "tsc": "tsc",
     "test": "jest"
@@ -20,18 +20,15 @@
   "dependencies": {
     "axios": "^0.19.2",
     "cheerio": "^1.0.0-rc.3",
-    "feedparser": "^2.2.9",
     "jest": "^25.1.0",
     "jsdom": "^16.2.1",
     "rss-parser": "^3.7.6",
     "rxjs": "^6.5.4",
-    "string-to-stream": "^3.0.1",
     "true-myth": "^4.0.0",
     "user-agents": "^1.0.559"
   },
   "_comments": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues/26338#issuecomment-591098514",
   "devDependencies": {
-    "@types/feedparser": "^2.2.3",
     "@types/jest": "^25.1.4",
     "@types/jsdom": "^12.2.4",
     "@types/xml2js": "^0.4.5",

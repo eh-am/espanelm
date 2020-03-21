@@ -1,10 +1,10 @@
 import { JSDOM } from 'jsdom';
 import { map, switchMap, catchError, tap } from 'rxjs/operators';
 import { Observable, EMPTY, of } from 'rxjs';
-import { load } from './utils';
-import { articleFromDOM } from './decoders/elpais';
-import { JSDOMImpl } from './decoders/dom';
-import { Article } from './decoders/article';
+import { load } from '../../utils';
+import { articleFromDOM } from './decoder';
+import { JSDOMImpl } from '../../decoders/dom';
+import { Article } from '../../decoders/article';
 
 export function scrapePage(url: string): Observable<Article> {
   return load<string>(url).pipe(

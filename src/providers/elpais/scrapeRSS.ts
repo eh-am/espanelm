@@ -8,8 +8,8 @@ const rssParser = new RSSParser({
 import { from, Observable, of, EMPTY } from 'rxjs';
 import { switchMap, mergeMap, map } from 'rxjs/operators';
 import { Maybe } from 'true-myth';
-import { load } from './utils';
-import { ptbrToEs, esToPtBr, SupportedLanguages } from './languages';
+import { load } from '../../utils';
+import { ptbrToEs, esToPtBr, SupportedLanguages } from '../../languages';
 
 // make 'link' field required
 export type RSSResponse = RSSParser.Item &

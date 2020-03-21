@@ -2,9 +2,9 @@ import { decodeBody } from './body';
 import { decodeLang } from './lang';
 import { decodeLinks } from './links';
 import { decodeTitle } from './title';
-import { Result, Maybe } from 'true-myth';
-import { DOMFromText, DOM } from '../dom';
-import { Article } from '../article';
+import { Result } from 'true-myth';
+import { DOMFromText, DOM } from '../../../decoders/dom';
+import { Article } from '../../../decoders/article';
 
 export function articleFromDOM(d: DOM): Result<Article, { reason: string }> {
   return instantiateArticle(d);

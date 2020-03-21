@@ -1,7 +1,7 @@
 import scrapePage from './scrapePage';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
-import { loadFixture } from '../test/helpers';
+import { loadFixture } from '../../../test/helpers';
 const axiosMock = new MockAdapter(axios);
 
 it('should work', async done => {
