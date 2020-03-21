@@ -2,51 +2,39 @@ import scrapePage from './scrapePage';
 import scrapeRSS from './scrapeRSS';
 import { map, mergeMap, reduce } from 'rxjs/operators';
 import { Observable, of, EMPTY } from 'rxjs';
+import { Languages } from './languages';
 
 // we need to infer the type later
 type Unpack<T> = T extends Observable<infer U> ? U : never;
 type Article = Unpack<ReturnType<typeof scrapePage>>;
 
-// not that pretty
-// since rss returns us 'pt-br'
-// but the scrapePage uses 'ptbr'
-function opposite(a: 'es' | 'ptbr'): 'es' | 'ptbr' {
-  switch (a) {
-    case 'es':
-      return 'ptbr';
-    case 'ptbr':
-      return 'es';
-  }
-}
-
 export function run(url: string): Observable<any> {
   return scrapeRSS(url).pipe(
-    mergeMap(a =>
-      scrapePage(a.link).pipe(
+    mergeMap(rssItem => {
+      // Scrape the original language
+      return scrapePage(rssItem.link).pipe(
+        // Guarantee the page has a link to the target language
         mergeMap(b => {
-          const o = opposite(a.language);
-          if (b.links[o]) {
-            return of(b);
-          }
-          return EMPTY;
+          return b.links[rssItem.language.target] ? of(b) : EMPTY;
         }),
-        mergeMap(page => {
-          const key = opposite(a.language);
-          // scrape es
-          return scrapePage(page.links[key]).pipe(
-            map(newPage => {
-              switch (a.language) {
-                case 'es': {
+
+        // Scrape the target language page
+        mergeMap(originalPage => {
+          const targetLang = rssItem.language.target;
+          return scrapePage(originalPage.links[targetLang]).pipe(
+            map(targetPage => {
+              switch (rssItem.language.origin) {
+                case Languages.SPANISH: {
                   return {
-                    es: page,
-                    ptbr: newPage
+                    es: originalPage,
+                    ptbr: targetPage
                   };
                 }
 
-                case 'ptbr': {
+                case Languages.PORTUGUESE: {
                   return {
-                    ptbr: page,
-                    es: newPage
+                    ptbr: originalPage,
+                    es: targetPage
                   };
                 }
               }
@@ -56,22 +44,27 @@ export function run(url: string): Observable<any> {
         map(b => {
           return {
             ...b,
-            publishedAt: a.isoDate
-              ? new Date(a.isoDate).getTime() / 1000
+            publishedAt: rssItem.isoDate
+              ? new Date(rssItem.isoDate).getTime() / 1000
               : null,
 
-            image: a.enclosure && a.enclosure.url ? a.enclosure.url : null
+            // https://github.com/rbren/rss-parser/issues/130
+            image:
+              rssItem['media:thumbnail']?.['media:thumbnail']?.[0]?.['$']?.[
+                'url'
+              ]
           };
         })
-      )
-    ),
+      );
+    }),
 
     // filter out articles with 0 paragraphs (wtf?)
     mergeMap(a => {
       if (a.es.body.length && a.ptbr.body.length) {
         return of(a);
       }
-      console.log('Article has 0 paragraphs. Skipping...', a);
+
+      console.warn('Article has 0 paragraphs. Skipping...', a);
       return EMPTY;
     }),
 

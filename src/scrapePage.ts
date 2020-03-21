@@ -15,10 +15,10 @@ export function scrapePage(url: string): Observable<Article> {
         return of(a.value);
       }
 
-      console.warn(
-        'Skipping url since it could not be decoded into a valid article:',
-        url
-      );
+      //      console.warn(
+      //        'Skipping url since it could not be decoded into a valid article:',
+      //        url
+      //      );
       return EMPTY;
     }),
     catchError(() => {
