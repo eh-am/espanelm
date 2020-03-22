@@ -1,11 +1,18 @@
-import { run } from './run';
+import { run } from './providers';
 
 if (process.argv.length != 3) {
-  console.log('usage ./script {url}');
+  console.log('usage ./script {provider}');
 
   process.exit(1);
 } else {
   // print to stdout
   // to be picked up by another process
-  run(process.argv[2]).subscribe(v => console.log(JSON.stringify(v)));
+  const arg = process.argv[2];
+
+  if (arg === 'elpais') {
+    run(arg).subscribe(v => console.log(JSON.stringify(v)));
+  } else {
+    console.log('Provider not supported', arg);
+    process.exit(1);
+  }
 }

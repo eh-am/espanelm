@@ -1,5 +1,5 @@
-import { loadFixtureOrFail } from '../../../test/helpers';
-import { DOM, DOMFromText } from '../dom';
+import { loadFixtureOrFail } from '../../../../test/helpers';
+import { DOM, DOMFromText } from '../../../decoders/dom';
 import { PageLinks, decodeLinks } from './links';
 import { Result } from 'true-myth';
 

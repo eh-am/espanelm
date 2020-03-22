@@ -1,4 +1,4 @@
-import { DOM } from '../dom';
+import { DOM } from '../../../decoders/dom';
 import { Maybe } from 'true-myth';
 
 export function decodeTitle(dom: DOM): Maybe<string> {
