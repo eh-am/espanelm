@@ -3,7 +3,7 @@ import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 const axiosMock = new MockAdapter(axios);
 import { reduce } from 'rxjs/operators';
-import { loadFixture } from '../test/helpers';
+import { loadFixture } from '../../../test/helpers';
 
 it('should work', async done => {
   await axiosMock.onGet('/').reply(200, loadFixture('portada_completo.xml'));

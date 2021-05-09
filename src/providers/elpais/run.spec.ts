@@ -3,11 +3,11 @@
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 const axiosMock = new MockAdapter(axios);
-import { default as articlesListPtBr } from '../test/fixtures/articles/list';
-import { default as articlesListEs } from '../test/fixtures/articles_es/list';
+import { default as articlesListPtBr } from '../../../test/fixtures/articles/list';
+import { default as articlesListEs } from '../../../test/fixtures/articles_es/list';
 
 import { run } from './run';
-import { loadFixture } from '../test/helpers';
+import { loadFixture } from '../../../test/helpers';
 
 it('should work for ptbr rss', async done => {
   const fixture = await loadFixture('portada_completo.xml');
