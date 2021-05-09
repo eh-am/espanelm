@@ -1,7 +1,7 @@
 FROM node:latest AS builder
 WORKDIR /app
 COPY . /app
-RUN npm install && npm test && npm run build
+RUN npm install && npm run build
 
 
 FROM node:alpine

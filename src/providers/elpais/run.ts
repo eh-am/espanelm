@@ -10,38 +10,39 @@ type Article = Unpack<ReturnType<typeof scrapePage>>;
 
 export function run(url: string): Observable<any> {
   return scrapeRSS(url).pipe(
-    mergeMap(rssItem => {
+    mergeMap((rssItem) => {
       // Scrape the original language
       return scrapePage(rssItem.link).pipe(
         // Guarantee the page has a link to the target language
-        mergeMap(b => {
+        mergeMap((b) => {
           return b.links[rssItem.language.target] ? of(b) : EMPTY;
         }),
 
         // Scrape the target language page
-        mergeMap(originalPage => {
+        mergeMap((originalPage) => {
           const targetLang = rssItem.language.target;
           return scrapePage(originalPage.links[targetLang]).pipe(
-            map(targetPage => {
+            map((targetPage) => {
               switch (rssItem.language.origin) {
                 case Languages.SPANISH: {
                   return {
                     es: originalPage,
-                    ptbr: targetPage
+                    ptbr: targetPage,
                   };
                 }
 
                 case Languages.PORTUGUESE: {
                   return {
                     ptbr: originalPage,
-                    es: targetPage
+                    es: targetPage,
                   };
                 }
               }
             })
           );
         }),
-        map(b => {
+        map((b) => {
+          const r = rssItem as any;
           return {
             ...b,
             publishedAt: rssItem.isoDate
@@ -50,16 +51,14 @@ export function run(url: string): Observable<any> {
 
             // https://github.com/rbren/rss-parser/issues/130
             image:
-              rssItem['media:thumbnail']?.['media:thumbnail']?.[0]?.['$']?.[
-                'url'
-              ]
+              r['media:thumbnail']?.['media:thumbnail']?.[0]?.['$']?.['url'],
           };
         })
       );
     }),
 
     // filter out articles with 0 paragraphs (wtf?)
-    mergeMap(a => {
+    mergeMap((a) => {
       if (a.es.body.length && a.ptbr.body.length) {
         return of(a);
       }
@@ -85,6 +84,6 @@ function mountObject(
 } {
   return {
     ptbr,
-    es
+    es,
   };
 }
