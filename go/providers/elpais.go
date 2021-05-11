@@ -44,7 +44,7 @@ var (
 func (e *Elpais) Scrape() ([]ArticleMeta, error) {
 	ctx := context.TODO()
 
-	feed, err := e.rss(ctx)
+	feed, err := e.RSS(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -113,10 +113,10 @@ func (e *Elpais) Scrape() ([]ArticleMeta, error) {
 	return responses, nil
 }
 
-// rss scrapes the rss feed
+// RSS scrapes the RSS feed
 // validates that the language is supported
 // and then return the feed
-func (e *Elpais) rss(ctx context.Context) (*gofeed.Feed, error) {
+func (e *Elpais) RSS(ctx context.Context) (*gofeed.Feed, error) {
 	feed, err := e.RssGetter.Get(ctx, "https://feeds.elpais.com/mrss-s/pages/ep/site/brasil.elpais.com/portada")
 	if err != nil {
 		return nil, err

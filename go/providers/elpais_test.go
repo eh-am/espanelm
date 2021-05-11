@@ -3,6 +3,7 @@ package providers_test
 import (
 	"bilingual-articles/providers"
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"testing"
@@ -13,7 +14,6 @@ import (
 type mockRssGetter struct{}
 
 func (m *mockRssGetter) Get(ctx context.Context, url string) (*gofeed.Feed, error) {
-
 	f, err := os.Open("../testdata/portaad-10-may-2021.xml")
 	if err != nil {
 		panic(err)
@@ -25,7 +25,9 @@ func (m *mockRssGetter) Get(ctx context.Context, url string) (*gofeed.Feed, erro
 type mockHttpClient struct{}
 
 func (m *mockHttpClient) Do(req *http.Request) (*http.Response, error) {
-	f, err := os.Open("../testdata/como-encontrar-vida-em-marte.html")
+	fmt.Println(req.URL, req.URL.Path)
+
+	f, err := os.Open("../testdata/" + req.URL.Path)
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +47,7 @@ func TestElPais(t *testing.T) {
 
 	res, err := elpais.Scrape()
 	if err != nil {
-		t.Fatalf("did not expect error")
+		t.Fatalf("did not expect error %+v", err)
 	}
 
 	t.Log("title", res)
