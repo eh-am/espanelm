@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -38,10 +39,11 @@ func (m *mockHttpClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func TestElPais(t *testing.T) {
-	elpais := providers.Elpais{
+	elpais := providers.NewElPais(
 		&mockRssGetter{},
 		&mockHttpClient{},
-	}
+		providers.Config{},
+	)
 
 	got, err := elpais.FetchPagesList()
 	if err != nil {
@@ -91,6 +93,12 @@ func TestElPais(t *testing.T) {
 		{Links: []providers.Link{{Url: "https://brasil.elpais.com/ciencia/2021-04-22/nasa-produz-oxigenio-respiravel-em-marte.html", Lang: "pt-BR"}, {Url: "https://elpais.com/ciencia/2021-04-22/ee-uu-produce-oxigeno-respirable-en-marte.html", Lang: "es-ES"}}},
 
 		{Links: []providers.Link{{Url: "https://brasil.elpais.com/ciencia/2021-04-19/nasa-pilota-um-drone-em-outro-planeta-pela-primeira-vez.html", Lang: "pt-BR"}, {Url: "https://elpais.com/ciencia/2021-04-19/la-nasa-vuela-un-dron-en-otro-planeta-por-primera-vez.html", Lang: "es-ES"}}}}
+
+	// Since things are returned in no particular order
+	// We need to sort them to be able to compare
+	// TODO maybe use testify's matchElement?
+	sort.Slice(want, func(i, j int) bool { return want[i].Links[0].Url < want[j].Links[0].Url })
+	sort.Slice(got, func(i, j int) bool { return got[i].Links[0].Url < got[j].Links[0].Url })
 
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("TestElPais() mismatch (-want +got):\n%s", diff)

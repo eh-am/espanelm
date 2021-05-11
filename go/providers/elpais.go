@@ -3,6 +3,7 @@ package providers
 import (
 	"context"
 	"net/http"
+	"runtime"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/mmcdole/gofeed"
@@ -19,6 +20,8 @@ type HttpClient interface {
 type Elpais struct {
 	RssGetter
 	HttpClient
+
+	Config
 }
 
 type Items []struct {
@@ -26,6 +29,22 @@ type Items []struct {
 
 	// TODO
 	language string
+}
+
+type Config struct {
+	MaxConcurrent int
+}
+
+func NewElPais(RssGetter RssGetter, HttpClient HttpClient, config Config) *Elpais {
+	if config.MaxConcurrent == 0 {
+		config.MaxConcurrent = runtime.GOMAXPROCS(0)
+	}
+
+	return &Elpais{
+		RssGetter,
+		HttpClient,
+		config,
+	}
 }
 
 func (e *Elpais) FetchPagesList() ([]Page, error) {
@@ -36,53 +55,32 @@ func (e *Elpais) FetchPagesList() ([]Page, error) {
 		return nil, err
 	}
 
-	responses := make([]Page, 0, len(feed.Items))
+	type Result struct {
+		Page  *Page
+		Error error
+	}
 
-	// for each item
-	// TODO go routine
+	totalItems := len(feed.Items)
+	responses := make([]Page, 0, totalItems)
+	ch := make(chan Result, e.Config.MaxConcurrent)
+
+	// Start a go routine for every item
 	for _, item := range feed.Items {
-		request, err := http.NewRequest("GET", item.Link, nil)
-		if err != nil {
-			return nil, err
-		}
+		go func(item *gofeed.Item) {
+			page, err := e.process(item)
+			ch <- Result{Page: page, Error: err}
+		}(item)
+	}
 
-		res, err := e.HttpClient.Do(request)
-		// Maybe we don't want to fail when there's an error
-		if err != nil {
-			return nil, err
-		}
-
-		// Load the HTML document
-		doc, err := goquery.NewDocumentFromReader(res.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		article := Page{}
-		doc.Find(`link[rel="alternate"]`).Each(func(i int, s *goquery.Selection) {
-			link := Link{}
-
-			href, ok := s.Attr("href")
-			if !ok {
-				return
+	// process all items
+	for i := 0; i < totalItems; i++ {
+		article := <-ch
+		if article.Page != nil {
+			// article link to something else other than itself
+			if len(article.Page.Links) > 1 {
+				responses = append(responses, *article.Page)
 			}
-
-			lang, ok := s.Attr("hreflang")
-			if !ok {
-				return
-			}
-
-			link.Lang = lang
-			link.Url = href
-
-			article.Links = append(article.Links, link)
-		})
-
-		// article link to something else other than itself
-		if len(article.Links) > 1 {
-			responses = append(responses, article)
 		}
-
 	}
 
 	return responses, nil
@@ -105,4 +103,45 @@ func (e *Elpais) RSS(ctx context.Context) (*gofeed.Feed, error) {
 	}
 
 	return feed, nil
+}
+
+func (e *Elpais) process(item *gofeed.Item) (*Page, error) {
+	request, err := http.NewRequest("GET", item.Link, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := e.HttpClient.Do(request)
+	// Maybe we don't want to fail when there's an error
+	if err != nil {
+		return nil, err
+	}
+
+	// Load the HTML document
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	page := Page{}
+	doc.Find(`link[rel="alternate"]`).Each(func(i int, s *goquery.Selection) {
+		link := Link{}
+
+		href, ok := s.Attr("href")
+		if !ok {
+			return
+		}
+
+		lang, ok := s.Attr("hreflang")
+		if !ok {
+			return
+		}
+
+		link.Lang = lang
+		link.Url = href
+
+		page.Links = append(page.Links, link)
+	})
+
+	return &page, nil
 }
