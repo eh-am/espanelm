@@ -4,6 +4,7 @@ import (
 	"bilingual-articles/providers"
 	"context"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -46,6 +47,7 @@ func main() {
 			}
 		}
 
+		log.Println("Writing", path)
 		f, err := os.Create(path)
 		if err != nil {
 			panic(err)

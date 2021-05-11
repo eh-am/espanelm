@@ -41,7 +41,7 @@ var (
 	ErrInvalidLanguage = errors.New("language not supported")
 )
 
-func (e *Elpais) Scrape() ([]ArticleMeta, error) {
+func (e *Elpais) BilingualPages() ([]ArticleMeta, error) {
 	ctx := context.TODO()
 
 	feed, err := e.RSS(ctx)
@@ -76,15 +76,7 @@ func (e *Elpais) Scrape() ([]ArticleMeta, error) {
 			return nil, err
 		}
 
-		// Title
-		//		title := doc.Find(`[property="og:title"]`)
-		//		titleText, exists := title.Attr("content")
-		//		if !exists {
-		//			return nil, errors.New("content does not exist for title")
-		//		}
-
 		article := ArticleMeta{}
-		//		doc.Find(`link[rel="alternate"]`).Each(func(i int, s *goquery.Selection) {
 		doc.Find(`link[rel="alternate"]`).Each(func(i int, s *goquery.Selection) {
 			link := link{}
 
@@ -104,7 +96,8 @@ func (e *Elpais) Scrape() ([]ArticleMeta, error) {
 			article.links = append(article.links, link)
 		})
 
-		if len(article.links) > 0 {
+		// article link to something else other than itself
+		if len(article.links) > 1 {
 			responses = append(responses, article)
 		}
 

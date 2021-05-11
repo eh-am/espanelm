@@ -45,7 +45,7 @@ func TestElPais(t *testing.T) {
 		&mockHttpClient{},
 	}
 
-	res, err := elpais.Scrape()
+	res, err := elpais.BilingualPages()
 	if err != nil {
 		t.Fatalf("did not expect error %+v", err)
 	}
