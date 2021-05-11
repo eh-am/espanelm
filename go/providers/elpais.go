@@ -2,7 +2,6 @@ package providers
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
@@ -28,20 +27,8 @@ type Items []struct {
 	// TODO
 	language string
 }
-type ArticleMeta struct {
-	links []link
-}
 
-type link struct {
-	url  string
-	lang string
-}
-
-var (
-	ErrInvalidLanguage = errors.New("language not supported")
-)
-
-func (e *Elpais) BilingualPages() ([]ArticleMeta, error) {
+func (e *Elpais) FetchPagesList() ([]Page, error) {
 	ctx := context.TODO()
 
 	feed, err := e.RSS(ctx)
@@ -49,7 +36,7 @@ func (e *Elpais) BilingualPages() ([]ArticleMeta, error) {
 		return nil, err
 	}
 
-	responses := make([]ArticleMeta, len(feed.Items))
+	responses := make([]Page, 0, len(feed.Items))
 
 	// for each item
 	// TODO go routine
@@ -65,20 +52,15 @@ func (e *Elpais) BilingualPages() ([]ArticleMeta, error) {
 			return nil, err
 		}
 
-		//		var buf bytes.Buffer
-		//		buf.ReadFrom(res.Body)
-		//		// TODO
-		//		responses = append(responses, buf.String())
-
 		// Load the HTML document
 		doc, err := goquery.NewDocumentFromReader(res.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		article := ArticleMeta{}
+		article := Page{}
 		doc.Find(`link[rel="alternate"]`).Each(func(i int, s *goquery.Selection) {
-			link := link{}
+			link := Link{}
 
 			href, ok := s.Attr("href")
 			if !ok {
@@ -90,14 +72,14 @@ func (e *Elpais) BilingualPages() ([]ArticleMeta, error) {
 				return
 			}
 
-			link.lang = lang
-			link.url = href
+			link.Lang = lang
+			link.Url = href
 
-			article.links = append(article.links, link)
+			article.Links = append(article.Links, link)
 		})
 
 		// article link to something else other than itself
-		if len(article.links) > 1 {
+		if len(article.Links) > 1 {
 			responses = append(responses, article)
 		}
 
