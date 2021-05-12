@@ -6,7 +6,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -26,6 +28,12 @@ func main() {
 
 	// TODO timeout and whatnot
 	for _, item := range feed.Items {
+		// parse link to be able to access later
+		parsed, err := url.Parse(item.Link)
+		if err != nil {
+			panic(err)
+		}
+
 		request, err := http.NewRequest("GET", item.Link, nil)
 		if err != nil {
 			panic(err)
@@ -38,7 +46,7 @@ func main() {
 		}
 
 		// create directory if necessary
-		path := "testdata" + dest
+		path := path.Join("testdata", parsed.Host, dest)
 		dir := filepath.Dir(path)
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			err := os.MkdirAll(dir, 0755)

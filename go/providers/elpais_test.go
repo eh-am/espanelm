@@ -26,7 +26,7 @@ func (m *mockRssGetter) Get(ctx context.Context, url string) (*gofeed.Feed, erro
 type mockHttpClient struct{}
 
 func (m *mockHttpClient) Do(req *http.Request) (*http.Response, error) {
-	f, err := os.Open("../testdata/" + req.URL.Path)
+	f, err := os.Open("../testdata/" + req.URL.Host + req.URL.Path)
 	if err != nil {
 		panic(err)
 	}
@@ -92,7 +92,8 @@ func TestElPais(t *testing.T) {
 
 		{Links: []providers.Link{{Url: "https://brasil.elpais.com/ciencia/2021-04-22/nasa-produz-oxigenio-respiravel-em-marte.html", Lang: "pt-BR"}, {Url: "https://elpais.com/ciencia/2021-04-22/ee-uu-produce-oxigeno-respirable-en-marte.html", Lang: "es-ES"}}},
 
-		{Links: []providers.Link{{Url: "https://brasil.elpais.com/ciencia/2021-04-19/nasa-pilota-um-drone-em-outro-planeta-pela-primeira-vez.html", Lang: "pt-BR"}, {Url: "https://elpais.com/ciencia/2021-04-19/la-nasa-vuela-un-dron-en-otro-planeta-por-primera-vez.html", Lang: "es-ES"}}}}
+		{Links: []providers.Link{{Url: "https://brasil.elpais.com/ciencia/2021-04-19/nasa-pilota-um-drone-em-outro-planeta-pela-primeira-vez.html", Lang: "pt-BR"}, {Url: "https://elpais.com/ciencia/2021-04-19/la-nasa-vuela-un-dron-en-otro-planeta-por-primera-vez.html", Lang: "es-ES"}}},
+	}
 
 	// Since things are returned in no particular order
 	// We need to sort them to be able to compare
