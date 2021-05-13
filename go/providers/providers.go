@@ -3,12 +3,12 @@ package providers
 import "errors"
 
 type Page struct {
-	Links []Link
+	Links []Link `json:"links"`
 }
 
 type Link struct {
-	Url  string
-	Lang string
+	Url  string `json:"url"`
+	Lang string `json:"lang"`
 }
 
 type ProcessedPage struct {

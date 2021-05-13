@@ -47,6 +47,22 @@ func NewElPais(RssGetter RssGetter, HttpClient HttpClient, config Config) *Elpai
 	}
 }
 
+//func (e *Elpais) ProcessPage(page Page) (interface{}, error) {
+//	for _, link := range page.Links {
+//		request, err := http.NewRequest("GET", link.Url, nil)
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		res, err := e.HttpClient.Do(request)
+//		if err != nil {
+//			return nil, err
+//		}
+//	}
+//
+//	return nil, nil
+//}
+//
 func (e *Elpais) FetchPagesList() ([]Page, error) {
 	ctx := context.TODO()
 
@@ -106,6 +122,8 @@ func (e *Elpais) RSS(ctx context.Context) (*gofeed.Feed, error) {
 }
 
 func (e *Elpais) process(item *gofeed.Item) (*Page, error) {
+	// TODO
+	// timeout
 	request, err := http.NewRequest("GET", item.Link, nil)
 	if err != nil {
 		return nil, err
