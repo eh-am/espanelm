@@ -3,7 +3,8 @@ package providers
 import "errors"
 
 type Page struct {
-	Links []Link `json:"links"`
+	Links    []Link `json:"links"`
+	Provider string `json:"provider"`
 }
 
 type Link struct {

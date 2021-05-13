@@ -141,7 +141,10 @@ func (e *Elpais) process(item *gofeed.Item) (*Page, error) {
 		return nil, err
 	}
 
-	page := Page{}
+	page := Page{
+		Provider: "elpais",
+	}
+
 	doc.Find(`link[rel="alternate"]`).Each(func(i int, s *goquery.Selection) {
 		link := Link{}
 

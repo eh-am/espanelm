@@ -1,9 +1,9 @@
-package main
+package download
 
 import (
 	"bilingual-articles/providers"
+	"errors"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -12,22 +12,15 @@ import (
 	"sync"
 )
 
-// downloads all bilingual articles
-func main() {
-	elpais := providers.NewElPais(
-		&providers.RSSGet{},
-		&http.Client{},
-		providers.Config{},
-	)
-	pages, err := elpais.FetchPagesList()
-	if err != nil {
-		panic(err)
-	}
-
+// Download downloads a list of page into destPath
+func Download(pages []providers.Page, destPath string) error {
 	var wg sync.WaitGroup
 
 	// TODO timeout and whatnot
 	for _, page := range pages {
+		if page.Provider != "elpais" {
+			return errors.New("unsupported provider")
+		}
 		// let's do one page at a time
 		wg.Add(len(page.Links))
 		for _, link := range page.Links {
@@ -50,7 +43,7 @@ func main() {
 				}
 
 				// create directory if necessary
-				path := path.Join("testdata", parsed.Host, dest)
+				path := path.Join(destPath, parsed.Host, dest)
 				dir := filepath.Dir(path)
 				if _, err := os.Stat(dir); os.IsNotExist(err) {
 					err := os.MkdirAll(dir, 0755)
@@ -59,7 +52,6 @@ func main() {
 					}
 				}
 
-				log.Println("Writing", path)
 				f, err := os.Create(path)
 				if err != nil {
 					panic(err)
@@ -74,4 +66,5 @@ func main() {
 		wg.Wait()
 	}
 
+	return nil
 }
