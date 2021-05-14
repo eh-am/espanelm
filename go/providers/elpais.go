@@ -63,6 +63,64 @@ func NewElPais(RssGetter RssGetter, HttpClient HttpClient, config Config) *Elpai
 //	return nil, nil
 //}
 //
+
+type ArticleUrl string
+
+func (a ArticleUrl) String() string {
+	return string(a)
+}
+
+// FindBilingualPages finds pages in different languages
+// including the original language of the article
+func (e Elpais) FindBilingualPages(ctx context.Context, articleUrl ArticleUrl) (*Page, error) {
+	// 1. Makes the http request
+	// TODO timeout
+	request, err := http.NewRequestWithContext(ctx, "GET", articleUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	res, err := e.HttpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Parse the HTML, looking for versions of the article in different languages
+	// Load the HTML document
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	page := Page{
+		Provider: "elpais",
+	}
+
+	doc.Find(`link[rel="alternate"]`).Each(func(i int, s *goquery.Selection) {
+		link := Link{}
+
+		href, ok := s.Attr("href")
+		if !ok {
+			return
+		}
+
+		lang, ok := s.Attr("hreflang")
+		if !ok {
+			return
+		}
+
+		link.Lang = lang
+		link.Url = href
+
+		page.Links = append(page.Links, link)
+	})
+
+	if len(page.Links) > 0 {
+		return &page, nil
+	}
+
+	return nil, nil
+}
+
 func (e *Elpais) FetchPagesList() ([]Page, error) {
 	ctx := context.TODO()
 
