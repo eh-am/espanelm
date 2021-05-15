@@ -50,18 +50,13 @@ func NewElPais(RssGetter RssGetter, HttpClient HttpClient, config Config) *Elpai
 	}
 }
 
-type ArticleUrl string
-
-func (a ArticleUrl) String() string {
-	return string(a)
-}
-
 type ElPaisArticle struct {
 	PtBr ReadableArticle `json:"pt-br"`
 	EsEs ReadableArticle `json:"es-es"`
 }
 
 // ReadableArticle represents an article ready to be consumed
+// Ie. after been processed by
 type ReadableArticle struct {
 	// Fields copied from readability.Article
 	Title       string
@@ -131,10 +126,10 @@ func (e Elpais) ProcessPage(ctx context.Context, page Page) (*ElPaisArticle, err
 
 // FindBilingualPages finds pages in different languages
 // including the original language of the article
-func (e Elpais) FindBilingualPages(ctx context.Context, articleUrl ArticleUrl) (*Page, error) {
+func (e Elpais) FindBilingualPages(ctx context.Context, articleUrl string) (*Page, error) {
 	// 1. Makes the http request
 	// TODO timeout
-	request, err := http.NewRequestWithContext(ctx, "GET", articleUrl.String(), nil)
+	request, err := http.NewRequestWithContext(ctx, "GET", articleUrl, nil)
 	if err != nil {
 		return nil, err
 	}
