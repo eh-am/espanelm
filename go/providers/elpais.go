@@ -2,11 +2,14 @@ package providers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"runtime"
 
 	"github.com/PuerkitoBio/goquery"
+	readability "github.com/go-shiori/go-readability"
 	"github.com/mmcdole/gofeed"
+	"golang.org/x/sync/errgroup"
 )
 
 type RssGetter interface {
@@ -47,27 +50,83 @@ func NewElPais(RssGetter RssGetter, HttpClient HttpClient, config Config) *Elpai
 	}
 }
 
-//func (e *Elpais) ProcessPage(page Page) (interface{}, error) {
-//	for _, link := range page.Links {
-//		request, err := http.NewRequest("GET", link.Url, nil)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		res, err := e.HttpClient.Do(request)
-//		if err != nil {
-//			return nil, err
-//		}
-//	}
-//
-//	return nil, nil
-//}
-//
-
 type ArticleUrl string
 
 func (a ArticleUrl) String() string {
 	return string(a)
+}
+
+type ElPaisArticle struct {
+	PtBr ReadableArticle `json:"pt-br"`
+	EsEs ReadableArticle `json:"es-es"`
+}
+
+// ReadableArticle represents an article ready to be consumed
+type ReadableArticle struct {
+	// Fields copied from readability.Article
+	Title       string
+	Byline      string
+	Content     string
+	TextContent string
+	Length      int
+	Excerpt     string
+	SiteName    string
+	Image       string
+
+	Url string
+}
+
+// ProcessPage processes a page returning it
+func (e Elpais) ProcessPage(ctx context.Context, page Page) (*ElPaisArticle, error) {
+	g, ctx := errgroup.WithContext(ctx)
+
+	elPaisArticle := ElPaisArticle{}
+
+	for _, p := range page.Links {
+		p := p
+
+		g.Go(func() error {
+			request, err := http.NewRequestWithContext(ctx, "GET", p.Url, nil)
+			if err != nil {
+				return err
+			}
+			res, err := e.HttpClient.Do(request)
+			if err != nil {
+				return err
+			}
+
+			article, err := readability.FromReader(res.Body, p.Url)
+
+			a := ReadableArticle{}
+			a.Url = p.Url
+			a.Title = article.Title
+			a.Byline = article.Byline
+			a.Content = article.Content
+			a.TextContent = article.TextContent
+			a.Length = article.Length
+			a.Excerpt = article.Excerpt
+			a.SiteName = article.SiteName
+			a.Image = article.Image
+
+			switch p.Lang {
+			case "pt-BR":
+				elPaisArticle.PtBr = a
+			case "es-ES":
+				elPaisArticle.EsEs = a
+			default:
+				return errors.New("unsupported language " + p.Lang)
+			}
+
+			return nil
+		})
+	}
+
+	err := g.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	return &elPaisArticle, nil
 }
 
 // FindBilingualPages finds pages in different languages
