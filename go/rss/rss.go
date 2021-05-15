@@ -1,4 +1,4 @@
-package providers
+package rss
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-type RSSGet struct{}
+type Gofeed struct{}
 
-func (r *RSSGet) Get(ctx context.Context, url string) (*gofeed.Feed, error) {
+func (r *Gofeed) Get(ctx context.Context, url string) (*gofeed.Feed, error) {
 	p := gofeed.NewParser()
 
 	return p.ParseURLWithContext(url, ctx)
