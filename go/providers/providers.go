@@ -1,10 +1,14 @@
 package providers
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 type Page struct {
-	Links    []Link `json:"links"`
-	Provider string `json:"provider"`
+	Links     []Link     `json:"links"`
+	Provider  string     `json:"provider"`
+	Published *time.Time `json:"published,omitempty"`
 }
 
 type Link struct {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
@@ -48,19 +49,24 @@ func TestElPaisFindBilingualPages(t *testing.T) {
 		want *providers.Page
 	}
 
+	now := time.Now()
+
 	tc := []args{
 		{
 			url: "https://brasil.elpais.com/cultura/2021-05-09/agua-de-murta-o-desodorante-de-isabel-a-catolica.html",
 			want: &providers.Page{
-				Provider: "elpais", Links: []providers.Link{
+				Published: &now,
+				Provider:  "elpais", Links: []providers.Link{
 					{Url: "https://brasil.elpais.com/cultura/2021-05-09/agua-de-murta-o-desodorante-de-isabel-a-catolica.html", Lang: "pt-BR"},
 					{Url: "https://elpais.com/cultura/2021-05-07/agua-de-murta-el-desodorante-de-isabel-la-catolica.html", Lang: "es-ES"}},
 			},
 		},
 
 		{
-			url:  "https://brasil.elpais.com/internacional/2021-05-03/espanha-cobra-o-desbloqueio-do-acordo-da-uniao-europeia-com-o-mercosul.html",
-			want: &providers.Page{Provider: "elpais", Links: []providers.Link{{Url: "https://brasil.elpais.com/internacional/2021-05-03/espanha-cobra-o-desbloqueio-do-acordo-da-uniao-europeia-com-o-mercosul.html", Lang: "pt-BR"}, {Url: "https://elpais.com/internacional/2021-05-03/espana-reclama-a-bruselas-que-desbloquee-el-acuerdo-con-mercosur.html", Lang: "es-ES"}}},
+			url: "https://brasil.elpais.com/internacional/2021-05-03/espanha-cobra-o-desbloqueio-do-acordo-da-uniao-europeia-com-o-mercosul.html",
+			want: &providers.Page{
+				Published: &now,
+				Provider:  "elpais", Links: []providers.Link{{Url: "https://brasil.elpais.com/internacional/2021-05-03/espanha-cobra-o-desbloqueio-do-acordo-da-uniao-europeia-com-o-mercosul.html", Lang: "pt-BR"}, {Url: "https://elpais.com/internacional/2021-05-03/espana-reclama-a-bruselas-que-desbloquee-el-acuerdo-con-mercosur.html", Lang: "es-ES"}}},
 		},
 
 		// Article that does not have a bilingual version
@@ -75,6 +81,7 @@ func TestElPaisFindBilingualPages(t *testing.T) {
 			got, err := ep.FindBilingualPages(
 				context.TODO(),
 				tt.url,
+				&now,
 			)
 			assert.NoError(t, err)
 

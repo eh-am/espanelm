@@ -3,6 +3,7 @@ package providers
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -19,7 +20,7 @@ type ElPaisProcessor interface {
 	RSS(ctx context.Context) (*gofeed.Feed, error)
 
 	// Find pages that are bilingual
-	FindBilingualPages(ctx context.Context, articleUrl string) (*Page, error)
+	FindBilingualPages(ctx context.Context, articleUrl string, published *time.Time) (*Page, error)
 
 	// ProcessPage
 	ProcessPage(ctx context.Context, page Page) (*ElPaisArticle, error)
@@ -36,12 +37,15 @@ func (elw *ElPaisWorker) Run() ([]ElPaisArticle, error) {
 
 	_ = cancelFunc
 
+	log.Println("Fetching RSS")
 	feed, err := elw.RSS(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	pages := elw.processRSS(ctx, feed)
 
+	log.Println("num of pages", pages)
 	// TODO what about the errors?
 	elpaisArticles := elw.processPage(ctx, pages)
 
@@ -62,8 +66,10 @@ func (elw *ElPaisWorker) processPage(ctx context.Context, pages []Page) []ElPais
 	// create the workers
 	// TODO errgroup
 	for i := 0; i < elw.Workers; i++ {
+		log.Println("creating worker", i)
 		go func() {
 			for j := range pagesCh {
+				log.Println("Sending page to be processed", j)
 				article, err := elw.ProcessPage(ctx, j)
 				if err != nil {
 					resultsCh <- elpaisArticleResult{Error: err}
@@ -83,21 +89,31 @@ func (elw *ElPaisWorker) processPage(ctx context.Context, pages []Page) []ElPais
 
 	// get the response
 	results := make([]ElPaisArticle, 0, numPages)
+	log.Println("page size is", numPages)
 	for i := 0; i < numPages; i++ {
 		r := <-resultsCh
 
+		log.Println("Received page", i)
 		// only send results further if they are valid results
 		if r.Error == nil {
+			log.Println("Processed page", i, "with no error")
 			results = append(results, r.Article)
 		}
 	}
 	return results
 }
 
-func (elw *ElPaisWorker) processRSS(ctx context.Context, feed *gofeed.Feed) []Page {
-	numLinks := len(feed.Links)
+// TODO
+// come up with a better name
+type pageProcess struct {
+	url       string
+	published *time.Time
+}
 
-	links := make(chan string, numLinks)
+func (elw *ElPaisWorker) processRSS(ctx context.Context, feed *gofeed.Feed) []Page {
+	numLinks := len(feed.Items)
+
+	links := make(chan pageProcess, numLinks)
 	resultsCh := make(chan result, numLinks)
 
 	// create the workers
@@ -107,13 +123,14 @@ func (elw *ElPaisWorker) processRSS(ctx context.Context, feed *gofeed.Feed) []Pa
 	}
 
 	// send the links to the buffered channel
-	for _, link := range feed.Links {
-		links <- link
+	for _, item := range feed.Items {
+		links <- pageProcess{published: feed.PublishedParsed, url: item.Link}
 	}
 	close(links)
 
 	// get the response
 	results := make([]Page, 0, numLinks)
+	log.Println("numLinks", numLinks)
 	for i := 0; i < numLinks; i++ {
 		r := <-resultsCh
 
@@ -130,19 +147,23 @@ type result struct {
 	Error error
 }
 
-func (elw *ElPaisWorker) workerRSS(ctx context.Context, in <-chan string, results chan<- result) {
+func (elw *ElPaisWorker) workerRSS(ctx context.Context, in <-chan pageProcess, results chan<- result) {
 	for j := range in {
-		page, err := elw.FindBilingualPages(ctx, j)
+		page, err := elw.FindBilingualPages(ctx, j.url, j.published)
+
 		if err != nil {
+			log.Println("page errored", j.url)
 			results <- result{Error: err}
 			continue
 		}
 
 		if page == nil {
+			log.Println("page has no bilingual page", j.url)
 			results <- result{Error: errors.New("no bilingual page")}
 			continue
 		}
 
+		log.Println("page does have bilingual page", j.url, page.Links)
 		results <- result{Page: *page}
 	}
 }

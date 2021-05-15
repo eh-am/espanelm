@@ -4,6 +4,7 @@ import (
 	"bilingual-articles/providers"
 	"context"
 	"testing"
+	"time"
 
 	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
@@ -15,8 +16,10 @@ func (e *MockElPaisProcessor) RSS(ctx context.Context) (*gofeed.Feed, error) {
 	// TODO
 	// generate more
 
+	now := time.Now()
 	return &gofeed.Feed{
 		// 8 items
+		PublishedParsed: &now,
 		Links: []string{
 			"https://brasil.elpais.com/internacional/2021-05-12/israel-e-hamas-intensificam-ataques-em-ofensiva-com-pelo-menos-60-mortos.html",
 			"https://elpais.com/internacional/2021-05-12/israel-y-hamas-intensifican-sus-ataques-en-una-ofensiva-con-decenas-de-muertos.html",
@@ -33,11 +36,12 @@ func (e *MockElPaisProcessor) RSS(ctx context.Context) (*gofeed.Feed, error) {
 	}, nil
 }
 
-func (e *MockElPaisProcessor) FindBilingualPages(ctx context.Context, articleUrl string) (*providers.Page, error) {
+func (e *MockElPaisProcessor) FindBilingualPages(ctx context.Context, articleUrl string, published *time.Time) (*providers.Page, error) {
 	// TODO
 	// generate random
 	return &providers.Page{
-		Provider: "elpais", Links: []providers.Link{
+		Published: published,
+		Provider:  "elpais", Links: []providers.Link{
 			{Url: "https://brasil.elpais.com/cultura/2021-05-09/agua-de-murta-o-desodorante-de-isabel-a-catolica.html", Lang: "pt-BR"},
 			{Url: "https://elpais.com/cultura/2021-05-07/agua-de-murta-el-desodorante-de-isabel-la-catolica.html", Lang: "es-ES"}},
 	}, nil
@@ -45,6 +49,7 @@ func (e *MockElPaisProcessor) FindBilingualPages(ctx context.Context, articleUrl
 }
 func (e *MockElPaisProcessor) ProcessPage(ctx context.Context, page providers.Page) (*providers.ElPaisArticle, error) {
 	return &providers.ElPaisArticle{
+		Published: page.Published,
 		PtBr: providers.ReadableArticle{
 			Url:     "https://brasil.elpais.com/cultura/2021-05-09/agua-de-murta-o-desodorante-de-isabel-a-catolica.html",
 			Title:   "Água de murta, o desodorante de Isabel, a Católica",

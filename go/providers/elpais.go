@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"runtime"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	readability "github.com/go-shiori/go-readability"
@@ -51,8 +52,9 @@ func NewElPais(RssGetter RssGetter, HttpClient HttpClient, config Config) *Elpai
 }
 
 type ElPaisArticle struct {
-	PtBr ReadableArticle `json:"pt-br"`
-	EsEs ReadableArticle `json:"es-es"`
+	Published *time.Time      `json:"published,omitempty"`
+	PtBr      ReadableArticle `json:"pt-br"`
+	EsEs      ReadableArticle `json:"es-es"`
 }
 
 // ReadableArticle represents an article ready to be consumed
@@ -75,7 +77,12 @@ type ReadableArticle struct {
 func (e Elpais) ProcessPage(ctx context.Context, page Page) (*ElPaisArticle, error) {
 	g, ctx := errgroup.WithContext(ctx)
 
-	elPaisArticle := ElPaisArticle{}
+	elPaisArticle := ElPaisArticle{
+		// this published field is not fully honest
+		// since it uses the published version of the article in the
+		// rss feed
+		Published: page.Published,
+	}
 
 	for _, p := range page.Links {
 		p := p
@@ -126,7 +133,7 @@ func (e Elpais) ProcessPage(ctx context.Context, page Page) (*ElPaisArticle, err
 
 // FindBilingualPages finds pages in different languages
 // including the original language of the article
-func (e Elpais) FindBilingualPages(ctx context.Context, articleUrl string) (*Page, error) {
+func (e Elpais) FindBilingualPages(ctx context.Context, articleUrl string, published *time.Time) (*Page, error) {
 	// 1. Makes the http request
 	// TODO timeout
 	request, err := http.NewRequestWithContext(ctx, "GET", articleUrl, nil)
@@ -146,7 +153,8 @@ func (e Elpais) FindBilingualPages(ctx context.Context, articleUrl string) (*Pag
 	}
 
 	page := Page{
-		Provider: "elpais",
+		Provider:  "elpais",
+		Published: published,
 	}
 
 	doc.Find(`link[rel="alternate"]`).Each(func(i int, s *goquery.Selection) {
@@ -168,7 +176,10 @@ func (e Elpais) FindBilingualPages(ctx context.Context, articleUrl string) (*Pag
 		page.Links = append(page.Links, link)
 	})
 
-	if len(page.Links) > 0 {
+	// a page needs to have at least couple links
+	// 1 for itself
+	// 2 for the other page
+	if len(page.Links) > 1 {
 		return &page, nil
 	}
 
@@ -254,7 +265,8 @@ func (e *Elpais) process(item *gofeed.Item) (*Page, error) {
 	}
 
 	page := Page{
-		Provider: "elpais",
+		Provider:  "elpais",
+		Published: item.PublishedParsed,
 	}
 
 	doc.Find(`link[rel="alternate"]`).Each(func(i int, s *goquery.Selection) {
