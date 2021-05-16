@@ -2,7 +2,9 @@ package elpais
 
 import (
 	"context"
+	"crypto/md5"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -181,6 +183,11 @@ func (e Provider) ProcessPage(ctx context.Context, page Page) (*ElPaisArticle, e
 	if err != nil {
 		return nil, err
 	}
+
+	// Generate the ID
+	// We use URLS to have a repeatable ID
+	data := []byte(elPaisArticle.PtBr.Url + elPaisArticle.EsEs.Url)
+	elPaisArticle.Id = fmt.Sprintf("%x", md5.Sum(data))
 
 	return &elPaisArticle, nil
 }

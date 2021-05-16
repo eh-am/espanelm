@@ -3,6 +3,7 @@ package elpais
 import "time"
 
 type ElPaisArticle struct {
+	Id        string          `json:"id"`
 	Published *time.Time      `json:"published,omitempty"`
 	PtBr      ReadableArticle `json:"pt-br"`
 	EsEs      ReadableArticle `json:"es-es"`

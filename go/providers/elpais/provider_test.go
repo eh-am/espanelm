@@ -109,6 +109,7 @@ func TestElPaisProcessPage(t *testing.T) {
 					{Url: "https://elpais.com/cultura/2021-05-07/agua-de-murta-el-desodorante-de-isabel-la-catolica.html", Lang: "es-ES"}},
 			},
 			want: elpais.ElPaisArticle{
+				Id: "4297f3862a64394ed1367885671c604c",
 				PtBr: elpais.ReadableArticle{
 					Url:         "https://brasil.elpais.com/cultura/2021-05-09/agua-de-murta-o-desodorante-de-isabel-a-catolica.html",
 					Title:       "Água de murta, o desodorante de Isabel, a Católica",
