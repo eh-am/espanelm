@@ -15,7 +15,7 @@ type ReadableArticle struct {
 	// Fields copied from readability.Article
 	Title       string
 	Byline      string
-	Content     string
+	Content     []string
 	TextContent string
 	Length      int
 	Excerpt     string

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -140,12 +141,28 @@ func (e Provider) ProcessPage(ctx context.Context, page Page) (*ElPaisArticle, e
 			a.Url = p.Url
 			a.Title = article.Title
 			a.Byline = article.Byline
-			a.Content = article.Content
+			//			a.Content = article.Content
 			a.TextContent = article.TextContent
 			a.Length = article.Length
 			a.Excerpt = article.Excerpt
 			a.SiteName = article.SiteName
 			a.Image = article.Image
+
+			a.Content = make([]string, 0, 0)
+
+			// let's break the body into multiple nodes
+			// so that they can be manipulated independently in the frontend
+			doc, err := goquery.NewDocumentFromReader(strings.NewReader(article.Content))
+			sel := doc.Find("#readability-page-1 > div").Children()
+
+			for i := range sel.Nodes {
+				single := sel.Eq(i)
+				h, err := goquery.OuterHtml(single)
+				if err != nil {
+					return err
+				}
+				a.Content = append(a.Content, h)
+			}
 
 			switch p.Lang {
 			case "pt-BR":
