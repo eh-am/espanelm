@@ -1,13 +1,14 @@
 import { readFileSync } from 'fs';
 import { useState, useEffect } from 'react';
 
-export default function Page(props: any) {
+export default function Page(props: any): any {
   const divStyle = {
     display: 'flex',
     maxWidth: '800px',
     margin: '0 auto',
   };
 
+  console.log('cachorr');
   return (
     <div className="articles" style={divStyle}>
       <Article
