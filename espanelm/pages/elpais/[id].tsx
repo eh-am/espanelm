@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface ElPaisArticle {
   byline: string;
@@ -19,6 +19,26 @@ interface ElPaisPage {
   'pt-br': ElPaisArticle;
 }
 
+type Paragraph =
+  | {
+      artificial: true;
+    }
+  | {
+      artificial: false;
+      content: string;
+      visible: boolean;
+    };
+
+function initParagraph(paragraphs: string[]): Paragraph[] {
+  return paragraphs.map((p) => {
+    return {
+      artificial: false,
+      content: p,
+      visible: true,
+    };
+  });
+}
+
 export default function Page(props: { page: ElPaisPage }): any {
   const divStyle = {
     display: 'flex',
@@ -36,32 +56,52 @@ export default function Page(props: { page: ElPaisPage }): any {
   );
 }
 
-function Article(props: { article1: ElPaisArticle; article2: ElPaisArticle }) {
-  const [articles, setArticles] = useState(props);
-
+function mergeArticles(col1: Paragraph[], col2: Paragraph[]) {
   const rows: [string, string][] = [];
+  let i = 0;
+  let j = 0;
 
-  function update() {
-    for (
-      let i = 0;
-      i < articles.article1.content.length ||
-      i < articles.article2.content.length;
-      i++
-    ) {
-      const col1 = articles.article1.content[i]
-        ? articles.article1.content[i]
-        : '';
-      const col2 = articles.article2.content[i]
-        ? articles.article2.content[i]
-        : '';
+  while (i < col1.length || j < col2.length) {
+    let p1 = '';
+    let p2 = '';
 
-      rows[i] = [col1, col2];
+    const c1 = col1[i];
+    if (c1 && !c1?.artificial && c1.content) {
+      if (c1.visible) {
+        p1 = c1.content;
+      } else {
+        p1 = 'This paragraph was hidden. Click to show it again.';
+      }
     }
+
+    const c2 = col2[j];
+    if (c2 && !c2.artificial && c2.content) {
+      if (c2.visible) {
+        p2 = c2.content;
+      } else {
+        p2 = 'This paragraph was hidden. Click to show it again.';
+      }
+    }
+
+    rows.push([p1, p2]);
+    i++;
+    j++;
   }
-  useEffect(() => {
-    update();
-  }, [articles]);
-  update();
+
+  return rows;
+}
+
+function Article(props: { article1: ElPaisArticle; article2: ElPaisArticle }) {
+  const [art, setArt] = useState({
+    article1: {
+      ...props.article1,
+      content: initParagraph(props.article1.content),
+    },
+    article2: {
+      ...props.article2,
+      content: initParagraph(props.article2.content),
+    },
+  });
 
   const style = {
     display: 'flex',
@@ -75,33 +115,49 @@ function Article(props: { article1: ElPaisArticle; article2: ElPaisArticle }) {
   function handleClick(e: any, name: 'article1' | 'article2', index: any) {
     e.preventDefault();
 
-    // TODO
-    // is this a good copy?
-    const articlesCopied = { ...articles };
+    const artCopied = { ...art };
+    const reverse = name == 'article1' ? 'article2' : 'article1';
+    const p = artCopied[name].content[index];
 
-    // remove that item
-    articlesCopied[name].content.splice(index, 1);
+    // nothing to be done when an artificial paragraph was clicked
+    if (p.artificial) {
+      return;
+    }
 
-    console.log('setting articles as null');
-    setArticles({
-      article1: articlesCopied.article1,
-      article2: articlesCopied.article2,
-    });
+    if (p.visible) {
+      // Hide it
+      p.visible = false;
+
+      // Insert an artificial item on the opposite column
+      artCopied[reverse].content.splice(index, 0, {
+        artificial: true,
+      });
+    } else {
+      // Hide it
+      p.visible = true;
+
+      // Remove the artificial item
+      artCopied[reverse].content.splice(index, 1);
+    }
+
+    artCopied[name].content[index];
+    setArt(artCopied);
   }
+
   return (
     <div>
-      {rows.map((c, i) => (
+      {mergeArticles(art.article1.content, art.article2.content).map((c, i) => (
         <div className="row" key={i} style={style}>
           <div
             className="column"
-            onClick={(e) => handleClick(e, 'article1', i)}
             style={styleCol}
+            onClick={(e) => handleClick(e, 'article1', i)}
             dangerouslySetInnerHTML={createMarkup(c[0])}
           ></div>
           <div
             className="column"
-            onClick={(e) => handleClick(e, 'article2', i)}
             style={styleCol}
+            onClick={(e) => handleClick(e, 'article2', i)}
             dangerouslySetInnerHTML={createMarkup(c[1])}
           ></div>
         </div>
