@@ -1,4 +1,4 @@
-name: Go code
+name: Pipeline
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
       - ci # branch for testing
 
 jobs:
-  go:
+  pipeline:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -15,29 +15,36 @@ jobs:
         with:
           stable: 'false'
           go-version: '1.15'
+
+      # Run the scrappers
       - working-directory: ./go
         run: |
           go test ./...
           ./hack/run.sh
 
+      # Build the nextjs application using
+      # the data from the scrappers
       - uses: actions/setup-node@v1
         with:
           node-version: 12
       - run: |
+          # TODO put this into a script
           npm install
           npm test
-          npm build
+          npm run build
 
           # TODO
           # publish the /out directory
         working-directory: ./espanelm
 
+      # deploy to github pages
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./espanelm/out
 
+      # publish the scrapped data back to the git repo
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: push scrapped pages

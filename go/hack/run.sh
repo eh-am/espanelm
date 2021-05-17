@@ -14,3 +14,6 @@ go run cmd/main.go elpais run > "../data/elpais/ptbr/$date.json"
 
 # TODO
 # merge all existing articles
+cp "../data/elpais/ptbr/$date.json" "../data/articles.json"
+
+
