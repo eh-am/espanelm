@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs';
 import { Article } from '../../components/article';
+import { loadPages } from './_load';
 
 interface ElPaisArticle {
   byline: string;
@@ -34,20 +34,6 @@ export default function Page(props: { page: ElPaisPage }): any {
       ></Article>
     </div>
   );
-}
-
-function loadPages() {
-  let articlesPath = '';
-  switch (process.env.NODE_ENV) {
-    default: {
-      articlesPath = '../data/elpais.json';
-    }
-  }
-
-  // TODO
-  // validate with zod
-  const res = JSON.parse(readFileSync(articlesPath, 'utf8'));
-  return res;
 }
 
 export async function getStaticProps(context: any) {
