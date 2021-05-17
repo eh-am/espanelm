@@ -22,8 +22,11 @@ jobs:
           go test ./...
           ./hack/run.sh
 
-      - run: |
-          cat data/articles.json
+      # publish the scrapped data back to the git repo
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: push scrapped pages
+          file_pattern: data/**/*
 
       # Build the nextjs application using
       # the data from the scrappers
@@ -47,8 +50,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./espanelm/out
 
-      # publish the scrapped data back to the git repo
-      - uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: push scrapped pages
-          file_pattern: data/**/*
