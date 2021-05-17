@@ -40,7 +40,7 @@ function loadPages() {
   let articlesPath = '';
   switch (process.env.NODE_ENV) {
     default: {
-      articlesPath = '../data/articles.json';
+      articlesPath = '../data/elpais.json';
     }
   }
 
