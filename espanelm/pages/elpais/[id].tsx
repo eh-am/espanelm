@@ -49,18 +49,20 @@ export async function getStaticProps(context: any) {
 }
 
 export async function getStaticPaths() {
+  let articlesPath = '';
   switch (process.env.NODE_ENV) {
     case 'development':
+      articlesPath = 'testdata/articles.json';
       break;
 
     default: {
-      throw new Error('Not implemented');
+      articlesPath = '../data/articles.json';
     }
   }
 
   // TODO
   // validate with zod
-  const res = JSON.parse(readFileSync('testdata/articles.json', 'utf8'));
+  const res = JSON.parse(readFileSync(articlesPath, 'utf8'));
 
   const params = res.map((a: any) => ({
     params: { id: a.id },

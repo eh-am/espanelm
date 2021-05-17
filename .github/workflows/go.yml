@@ -1,0 +1,44 @@
+name: Go code
+
+on:
+  push:
+    branches:
+      - master
+      - ci # branch for testing
+
+jobs:
+  go:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          stable: 'false'
+          go-version: '1.15'
+      - working-directory: ./go
+        run: |
+          go test ./...
+          ./hack/run.sh
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: |
+          npm install
+          npm test
+          npm build
+
+          # TODO
+          # publish the /out directory
+        working-directory: ./espanelm
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./espanelm/out
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: push scrapped pages
+          file_pattern: data/**/*
