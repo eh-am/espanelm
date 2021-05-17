@@ -1,3 +1,10 @@
+import Link from 'next/link';
 export default function Home() {
-  return <h1>Espanelm</h1>;
+  return (
+    <div>
+      <Link href="/elpais/pt-br/es-es" passHref>
+        <a>EL PAIS pt-br to es-es</a>
+      </Link>
+    </div>
+  );
 }

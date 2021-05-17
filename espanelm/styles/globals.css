@@ -16,6 +16,14 @@ a {
 }
 
 
+/*
+#__next {
+  background: #95b6e3;
+}
+*/
+body {
+  background: #e5e7eb;
+}
 
 .articles img {
   max-width: 100%;
