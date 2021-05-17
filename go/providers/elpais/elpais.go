@@ -14,16 +14,16 @@ type ElPaisArticle struct {
 // Ie. after been processed by
 type ReadableArticle struct {
 	// Fields copied from readability.Article
-	Title       string
-	Byline      string
-	Content     []string
-	TextContent string
-	Length      int
-	Excerpt     string
-	SiteName    string
-	Image       string
+	Title       string   `json:"title"`
+	Byline      string   `json:"byline"`
+	Content     []string `json:"content"`
+	TextContent string   `json:"textContent"`
+	Length      int      `json:"length"`
+	Excerpt     string   `json:"excerpt"`
+	SiteName    string   `json:"siteName"`
+	Image       string   `json:"image"`
 
-	Url string
+	Url string `json:"url"`
 }
 
 type Page struct {
