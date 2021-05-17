@@ -29,12 +29,15 @@ type HttpClient interface {
 type Provider struct {
 	RssGetter
 	HttpClient
+	FeedUrl string
 }
 
 func NewProvider(RssGetter RssGetter, HttpClient HttpClient) *Provider {
+	FeedUrl := "https://feeds.elpais.com/mrss-s/pages/ep/site/brasil.elpais.com/portada"
 	return &Provider{
 		RssGetter,
 		HttpClient,
+		FeedUrl,
 	}
 }
 
@@ -43,17 +46,17 @@ func NewProvider(RssGetter RssGetter, HttpClient HttpClient) *Provider {
 // and then return the feed
 func (e *Provider) RSS(ctx context.Context) (*gofeed.Feed, error) {
 	// TODO: what if we want to use different RSS feeds
-	feed, err := e.RssGetter.Get(ctx, "https://feeds.elpais.com/mrss-s/pages/ep/site/brasil.elpais.com/portada")
+	feed, err := e.RssGetter.Get(ctx, e.FeedUrl)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate it's a language we support
-	switch feed.Language {
-	case "pt-br", "es":
-	default:
-		return nil, errors.New("invalid language" + feed.Language)
-	}
+	//	switch feed.Language {
+	//	case "pt-br", "es":
+	//	default:
+	//		return nil, errors.New("invalid language" + feed.Language)
+	//	}
 
 	return feed, nil
 }
