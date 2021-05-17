@@ -25,8 +25,11 @@ func main() {
 		downloadDest    = downloadFlagSet.String("dest", "", "where to download")
 
 		elPaisCmdFlagSet = flag.NewFlagSet("elpais", flag.ExitOnError)
+		elPaisFlagSet    = flag.NewFlagSet("elpais", flag.ExitOnError)
 
-		elPaisFlagSet = flag.NewFlagSet("elpais", flag.ExitOnError)
+		// elpais bilingual
+		epBilingualFlagSet = flag.NewFlagSet("bilingual", flag.ExitOnError)
+		epBilingualRss     = epBilingualFlagSet.String("rss", "", "what rss feed to use")
 	)
 
 	download := &ffcli.Command{
@@ -107,12 +110,61 @@ func main() {
 		},
 	}
 
+	epBilingualCmd := &ffcli.Command{
+		Name:       "bilingual",
+		ShortUsage: "bilingual",
+		ShortHelp:  "return the list of bilingual articles",
+		FlagSet:    epBilingualFlagSet,
+		Exec: func(ctx context.Context, args []string) error {
+			logger := log.LoggerFunc(l.Println)
+
+			// Setup
+			ctx, cancel := context.WithTimeout(ctx, time.Minute*5)
+			defer cancel()
+
+			// Dependencies
+			provider := &elpais.Provider{
+				RssGetter:  &rss.Gofeed{},
+				HttpClient: &http.Client{},
+			}
+
+			// setup a feed url
+			if *epBilingualRss != "" {
+				provider.FeedUrl = *epBilingualRss
+			}
+
+			runner := elpais.NewRunner(provider, logger, 2)
+
+			// get the links from rss
+			feed, err := provider.RSS(ctx)
+			if err != nil {
+				return err
+			}
+
+			pages := runner.FindBilingualPages(ctx, feed)
+
+			links := make([]string, 0, len(pages))
+			for _, page := range pages {
+				for _, link := range page.Links {
+					links = append(links, link.Url)
+				}
+			}
+
+			js, err := json.Marshal(links)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(string(js))
+			return nil
+		},
+	}
 	elpaisCmd := &ffcli.Command{
 		Name:        "elpais",
 		ShortHelp:   "functions for the elpais provider",
 		ShortUsage:  "elpais <subcommand>",
 		FlagSet:     elPaisCmdFlagSet,
-		Subcommands: []*ffcli.Command{download, elpaisRunCmd},
+		Subcommands: []*ffcli.Command{download, elpaisRunCmd, epBilingualCmd},
 		Exec: func(context.Context, []string) error {
 			return flag.ErrHelp
 		},
@@ -121,7 +173,7 @@ func main() {
 	root := &ffcli.Command{
 		ShortUsage:  "espanelm <subcommand>",
 		FlagSet:     rootFlagSet,
-		Subcommands: []*ffcli.Command{download, elpaisCmd},
+		Subcommands: []*ffcli.Command{elpaisCmd},
 		Exec: func(context.Context, []string) error {
 			return flag.ErrHelp
 		},
