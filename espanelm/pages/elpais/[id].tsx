@@ -36,8 +36,22 @@ export default function Page(props: { page: ElPaisPage }): any {
   );
 }
 
+function loadPages() {
+  let articlesPath = '';
+  switch (process.env.NODE_ENV) {
+    default: {
+      articlesPath = '../data/articles.json';
+    }
+  }
+
+  // TODO
+  // validate with zod
+  const res = JSON.parse(readFileSync(articlesPath, 'utf8'));
+  return res;
+}
+
 export async function getStaticProps(context: any) {
-  const res = JSON.parse(readFileSync('testdata/articles.json', 'utf8'));
+  const res = loadPages();
 
   const page = res.find((a: any) => a.id == context.params.id);
 
@@ -49,20 +63,7 @@ export async function getStaticProps(context: any) {
 }
 
 export async function getStaticPaths() {
-  let articlesPath = '';
-  switch (process.env.NODE_ENV) {
-    case 'development':
-      articlesPath = 'testdata/articles.json';
-      break;
-
-    default: {
-      articlesPath = '../data/articles.json';
-    }
-  }
-
-  // TODO
-  // validate with zod
-  const res = JSON.parse(readFileSync(articlesPath, 'utf8'));
+  const res = loadPages();
 
   const params = res.map((a: any) => ({
     params: { id: a.id },
