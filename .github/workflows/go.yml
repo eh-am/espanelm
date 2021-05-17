@@ -22,6 +22,9 @@ jobs:
           go test ./...
           ./hack/run.sh
 
+      - run: |
+          cat data/articles.json
+
       # Build the nextjs application using
       # the data from the scrappers
       - uses: actions/setup-node@v1
