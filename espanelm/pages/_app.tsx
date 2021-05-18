@@ -1,9 +1,15 @@
 import type { AppProps /*, AppContext */ } from 'next/app';
 import '../styles/globals.css';
 import 'tailwindcss/tailwind.css';
+import React from 'react';
+import SiteLayout from '../components/site-layout';
 
 function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+  return (
+    <SiteLayout>
+      <Component {...pageProps} />;
+    </SiteLayout>
+  );
 }
 
 // Only uncomment this method if you have blocking data requirements for

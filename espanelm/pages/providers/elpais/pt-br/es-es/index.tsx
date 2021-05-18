@@ -1,14 +1,14 @@
 import Link from 'next/link';
 
 import rt from 'reading-time';
-import { loadPages } from '../../../../utils/load';
+import { loadPages } from '../../../../../utils/load';
 function readingTime(text: string) {
   return Math.round(rt(text).minutes);
 }
 
 export default function ElPais(props: any) {
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto mt-4">
       <div className="mx-2">
         <h1 className="text-4xl font-bold">El Pais</h1>
         <h2 className="text-xl">Brazilian portuguese to Spain Spanish</h2>
@@ -35,7 +35,7 @@ function Preview(props: any) {
       </div>
 
       <div>
-        <Link href={`/elpais/${props.id}`} passHref>
+        <Link href={`/providers/elpais/${props.id}`} passHref>
           <a className="bg-lime-500 hover:bg-lime-700 mt-8 float-right py-2 px-8 rounded">
             Read
           </a>

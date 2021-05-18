@@ -1,5 +1,5 @@
-import { Article } from '../../components/article';
-import { loadPages } from '../../utils/load';
+import { Article } from '../../../components/article';
+import { loadPages } from '../../../utils/load';
 
 interface ElPaisArticle {
   byline: string;
