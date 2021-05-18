@@ -1,4 +1,5 @@
-import { Article } from '../../components/article';
+//import { Article as Article2 } from '../../components/article';
+import { Article2 } from '../../components/article2';
 import { loadPages } from './_load';
 
 interface ElPaisArticle {
@@ -22,16 +23,14 @@ interface ElPaisPage {
 export default function Page(props: { page: ElPaisPage }): any {
   const divStyle = {
     display: 'flex',
-    maxWidth: '800px',
-    margin: '0 auto',
   };
 
   return (
-    <div className="articles" style={divStyle}>
-      <Article
+    <div className="articles container mx-auto" style={divStyle}>
+      <Article2
         article1={props.page['pt-br']}
         article2={props.page['es-es']}
-      ></Article>
+      ></Article2>
     </div>
   );
 }

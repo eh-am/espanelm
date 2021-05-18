@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { nanoid } from 'nanoid';
+import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 interface IArticle {
   content: string[];
@@ -65,32 +67,39 @@ function Article(props: { article1: IArticle; article2: IArticle }) {
   };
 
   return (
-    //    <div className="column bg-white shadow-lg my-8 mx-2 p-4">
-    <div>
-      <div data-testid="row" className="row flex">
-        <h1 style={styleTitle} className="text-xl font-bold">
+    <div className="column bg-white shadow-lg my-8 mx-2">
+      <div data-testid="row" className="row flex ">
+        <h1 style={styleTitle} className="text-xl font-bold mx-2 p-2">
           {art.article1.title}
         </h1>
-        <h1 style={styleTitle} className="text-xl font-bold">
+        <h1 style={styleTitle} className="text-xl font-bold mx-2 p-2">
           {art.article2.title}
         </h1>
       </div>
+      <hr />
       {mergeParagraphs(art.article1.content, art.article2.content).map(
         (c, i) => (
-          <div data-testid="row" key={c.key} className="row flex">
-            <Paragraph
-              handleClick={handleClick}
-              i={i}
-              name="article1"
-              p={c.p1.content}
-            ></Paragraph>
-            <Paragraph
-              handleClick={handleClick}
-              i={i}
-              name="article2"
-              p={c.p2.content}
-            ></Paragraph>
-          </div>
+          <Fragment key={c.key}>
+            <div data-testid="row" className="row flex">
+              <Paragraph
+                handleClick={handleClick}
+                i={i}
+                name="article1"
+                p={c.p1.content}
+                artificial={c.p1.artificial}
+                visible={c.p1.visible}
+              ></Paragraph>
+              <Paragraph
+                handleClick={handleClick}
+                i={i}
+                name="article2"
+                artificial={c.p2.artificial}
+                visible={c.p2.visible}
+                p={c.p2.content}
+              ></Paragraph>
+            </div>
+            <hr />
+          </Fragment>
         )
       )}
     </div>
@@ -102,15 +111,36 @@ function Paragraph(props: any) {
     flex: '50%',
   };
 
+  console.log('visible', props.visible);
+
   return (
-    <div
-      data-testid={props.name + props.i}
-      style={style}
-      className="column bg-white shadow-lg my-8 mx-2 p-4"
-      //className="column my-8 mx-2 p-4"
-      onClick={(e) => props.handleClick(e, props.name, props.i)}
-      dangerouslySetInnerHTML={createMarkup(props.p)}
-    ></div>
+    <div className="column mx-2 px-2" style={style}>
+      <div>
+        {!props.artificial && (
+          <button
+            className="px-2 mt-4 border rounded border-lime-500"
+            onClick={(e) => props.handleClick(e, props.name, props.i)}
+          >
+            {props.visible ? (
+              <>
+                <MdVisibilityOff className="inline-block"></MdVisibilityOff>
+                <span className="ml-2 text-xs">Hide</span>
+              </>
+            ) : (
+              <>
+                <MdVisibility className="inline-block"></MdVisibility>
+                <span className="ml-2 text-xs">Show</span>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+      <div
+        className="text-justify py-4"
+        data-testid={props.name + props.i}
+        dangerouslySetInnerHTML={createMarkup(props.p)}
+      ></div>
+    </div>
   );
 }
 
@@ -136,10 +166,12 @@ function mergeParagraphs(col1: Paragraph[], col2: Paragraph[]) {
     p1: {
       content: string;
       artificial: boolean;
+      visible: boolean;
     };
     p2: {
       content: string;
       artificial: boolean;
+      visible: boolean;
     };
     key: string;
   }[] = [];
@@ -184,12 +216,12 @@ function mergeParagraphs(col1: Paragraph[], col2: Paragraph[]) {
     rows.push({
       key,
       p1: {
+        ...c1,
         content: p1,
-        artificial: c1.artificial,
       },
       p2: {
+        ...c2,
         content: p2,
-        artificial: c2?.artificial,
       },
     });
 
@@ -200,4 +232,4 @@ function mergeParagraphs(col1: Paragraph[], col2: Paragraph[]) {
   return rows;
 }
 
-export { Article };
+export { Article as Article2 };
