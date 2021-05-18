@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { nanoid } from 'nanoid';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 interface IArticle {
   content: string[];
@@ -65,32 +66,39 @@ function Article(props: { article1: IArticle; article2: IArticle }) {
   };
 
   return (
-    //    <div className="column bg-white shadow-lg my-8 mx-2 p-4">
-    <div>
-      <div data-testid="row" className="row flex">
-        <h1 style={styleTitle} className="text-xl font-bold">
+    <div className="column bg-white shadow-lg my-8 mx-2">
+      <div className="row flex ">
+        <h1 style={styleTitle} className="text-xl font-bold mx-2 p-2">
           {art.article1.title}
         </h1>
-        <h1 style={styleTitle} className="text-xl font-bold">
+        <h1 style={styleTitle} className="text-xl font-bold mx-2 p-2">
           {art.article2.title}
         </h1>
       </div>
+      <hr />
       {mergeParagraphs(art.article1.content, art.article2.content).map(
         (c, i) => (
-          <div data-testid="row" key={c.key} className="row flex">
-            <Paragraph
-              handleClick={handleClick}
-              i={i}
-              name="article1"
-              p={c.p1.content}
-            ></Paragraph>
-            <Paragraph
-              handleClick={handleClick}
-              i={i}
-              name="article2"
-              p={c.p2.content}
-            ></Paragraph>
-          </div>
+          <Fragment key={c.key}>
+            <div data-testid="row" className="row flex">
+              <Paragraph
+                handleClick={handleClick}
+                i={i}
+                name="article1"
+                p={c.p1.content}
+                artificial={c.p1.artificial}
+                visible={c.p1.artificial ? false : c.p1.visible}
+              ></Paragraph>
+              <Paragraph
+                handleClick={handleClick}
+                i={i}
+                name="article2"
+                artificial={c.p2.artificial}
+                visible={c.p2.artificial ? false : c.p2.visible}
+                p={c.p2.content}
+              ></Paragraph>
+            </div>
+            <hr />
+          </Fragment>
         )
       )}
     </div>
@@ -103,14 +111,34 @@ function Paragraph(props: any) {
   };
 
   return (
-    <div
-      data-testid={props.name + props.i}
-      style={style}
-      className="column bg-white shadow-lg my-8 mx-2 p-4"
-      //className="column my-8 mx-2 p-4"
-      onClick={(e) => props.handleClick(e, props.name, props.i)}
-      dangerouslySetInnerHTML={createMarkup(props.p)}
-    ></div>
+    <div className="column mx-2 px-2" style={style}>
+      <div>
+        {!props.artificial && (
+          <button
+            data-testid={`show-hide-button-` + props.name + `-` + props.i}
+            className="px-2 mt-4 border rounded border-lime-500"
+            onClick={(e) => props.handleClick(e, props.name, props.i)}
+          >
+            {props.visible ? (
+              <>
+                <MdVisibilityOff className="inline-block"></MdVisibilityOff>
+                <span className="ml-2 text-xs">Hide</span>
+              </>
+            ) : (
+              <>
+                <MdVisibility className="inline-block"></MdVisibility>
+                <span className="ml-2 text-xs">Show</span>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+      <div
+        className="text-justify py-4"
+        data-testid={props.name + '-' + props.i}
+        dangerouslySetInnerHTML={createMarkup(props.p)}
+      ></div>
+    </div>
   );
 }
 
@@ -132,18 +160,25 @@ function createMarkup(c: any) {
 // mergeParagraph merges 2 list of paragraphs into a list of tuples
 // so that they can be easily renderer
 function mergeParagraphs(col1: Paragraph[], col2: Paragraph[]) {
+  //  const rows: {
+  //    p1: {
+  //      content: string;
+  //      artificial: boolean;
+  //      visible: boolean;
+  //    };
+  //    p2: {
+  //      content: string;
+  //      artificial: boolean;
+  //      visible: boolean;
+  //    };
+  //    key: string;
+  //  }[] = [];
+  //
   const rows: {
-    p1: {
-      content: string;
-      artificial: boolean;
-    };
-    p2: {
-      content: string;
-      artificial: boolean;
-    };
+    p1: Paragraph & { content: string };
+    p2: Paragraph & { content: string };
     key: string;
   }[] = [];
-
   let i = 0;
   let j = 0;
   // by default, don't use a natural key
@@ -184,12 +219,12 @@ function mergeParagraphs(col1: Paragraph[], col2: Paragraph[]) {
     rows.push({
       key,
       p1: {
+        ...c1,
         content: p1,
-        artificial: c1.artificial,
       },
       p2: {
+        ...c2,
         content: p2,
-        artificial: c2?.artificial,
       },
     });
 

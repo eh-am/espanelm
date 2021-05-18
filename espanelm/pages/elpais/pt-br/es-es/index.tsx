@@ -1,7 +1,7 @@
-import { loadPages } from '../../_load';
 import Link from 'next/link';
 
 import rt from 'reading-time';
+import { loadPages } from '../../../../utils/load';
 function readingTime(text: string) {
   return Math.round(rt(text).minutes);
 }

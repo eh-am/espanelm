@@ -30,7 +30,7 @@ describe('Article', () => {
   });
 
   describe('hiding paragraph', () => {
-    it('works', () => {
+    fit('works', () => {
       const article1 = {
         title: 'title of article 1',
         content: ['<p>p1 article1<p>'],
@@ -55,7 +55,7 @@ describe('Article', () => {
       expect(screen.queryAllByTestId('hidden')).toHaveLength(0);
 
       // after hiding an article
-      screen.getByTestId('article1-0').click();
+      screen.getByTestId('show-hide-button-article1-0').click();
 
       // the total number of rows should be n + 1
       // since that paragraph was moved to its own
@@ -65,7 +65,7 @@ describe('Article', () => {
       expect(screen.getAllByTestId('hidden')).toHaveLength(1);
 
       // unhide
-      screen.getByTestId('article1-0').click();
+      screen.getByTestId('show-hide-button-article1-0').click();
 
       // the additional row should've gone away
       rows = screen.getAllByTestId('row');

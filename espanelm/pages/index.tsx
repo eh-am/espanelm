@@ -1,7 +1,7 @@
 import Link from 'next/link';
+import { loadPages } from '../utils/load';
 
 import ElPais from './elpais/pt-br/es-es';
-import { loadPages } from './elpais/_load';
 
 export default ElPais;
 //export default function Home() {
